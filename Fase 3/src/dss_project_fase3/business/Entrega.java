@@ -54,6 +54,19 @@ public class Entrega {
                 this.destino.equals(e.getDestino());
     }
 
+    public String toString(String offset) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(offset).append("Entrega: ").append("\n");
+        sb.append(this.palete.toString(offset + "\t"));
+        sb.append(offset).append("Origem:").append("\n");
+        sb.append(this.origem.toString(offset + "\t"));
+        sb.append(offset).append("Destino:").append("\n");
+        sb.append(this.destino.toString(offset + "\t"));
+
+        return sb.toString();
+    }
+
     public Entrega clone() {
         return new Entrega(this);
     }

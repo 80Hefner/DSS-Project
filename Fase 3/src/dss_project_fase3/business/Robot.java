@@ -56,4 +56,14 @@ public class Robot {
     public boolean equals(Object o) {
         return this == o;
     }
+
+    public String toString(String offset) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(offset).append("Robot ").append(this.id_robot).append("\n");
+        sb.append(offset).append("\tDisponivel: ").append(this.disponivel).append("\n");
+        if (this.entregaAtual != null) sb.append(this.entregaAtual.toString(offset + "\t"));
+
+        return sb.toString();
+    }
 }

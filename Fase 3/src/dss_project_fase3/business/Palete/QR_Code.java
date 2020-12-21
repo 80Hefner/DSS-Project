@@ -1,5 +1,7 @@
 package dss_project_fase3.business.Palete;
 
+import dss_project_fase3.business.Exceptions.InvalidQRCodeException;
+
 public class QR_Code {
     private String codigo;
 
@@ -31,11 +33,16 @@ public class QR_Code {
         return new QR_Code(this);
     }
 
-    public boolean isValid() {   // exemplo:   "QR_CODE_BEGIN&&Farinha&&QR_CODE_END"
+    public void isValid() throws InvalidQRCodeException {   // exemplo:   "QR_CODE_BEGIN&&Farinha&&QR_CODE_END"
         String[] param = this.codigo.split("&&");
 
-        return param.length == 3 &&
-                param[0].equals("QR_CODE_BEGIN") &&
-                param[2].equals("QR_CODE_END");
+        if ( param.length != 3
+                || !param[0].equals("QR_CODE_BEGIN")
+                || !param[2].equals("QR_CODE_END"))
+            throw new InvalidQRCodeException();
+    }
+
+    public String getMaterial() {
+        return this.codigo.split("&&")[1];
     }
 }
