@@ -1,6 +1,6 @@
 package dss_project_fase3.business.Localizacao;
 
-import dss_project_fase3.business.ZonaArmazem;
+import dss_project_fase3.business.Enums.ZonaArmazem;
 
 public class Localizacao_Robot extends Localizacao {
     private int id_robot;
@@ -30,6 +30,15 @@ public class Localizacao_Robot extends Localizacao {
 
         return super.getZona().equals(l.getZona()) &&
                 this.id_robot == l.getId_robot();
+    }
+
+    public String toString(String offset) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(offset).append("Localização: Robot\n");
+        sb.append(offset).append("\tID Robot: ").append(this.id_robot).append("\n");
+
+        return sb.toString();
     }
 
     public Localizacao_Robot clone() {

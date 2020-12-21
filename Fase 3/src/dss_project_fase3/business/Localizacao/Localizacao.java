@@ -1,6 +1,6 @@
 package dss_project_fase3.business.Localizacao;
 
-import dss_project_fase3.business.ZonaArmazem;
+import dss_project_fase3.business.Enums.ZonaArmazem;
 
 public abstract class Localizacao {
     private ZonaArmazem zona;
@@ -28,6 +28,8 @@ public abstract class Localizacao {
 
         return this.zona.equals(l.getZona());
     }
+
+    public abstract String toString(String offset);
 
     public abstract Localizacao clone();
 }

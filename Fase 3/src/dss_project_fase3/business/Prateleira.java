@@ -1,7 +1,7 @@
 package dss_project_fase3.business;
 
-import dss_project_fase3.business.Localizacao.Localizacao;
 import dss_project_fase3.business.Localizacao.Localizacao_Armazenamento;
+import dss_project_fase3.business.Palete.Palete;
 
 public class Prateleira implements Comparable<Prateleira>{
     private final Localizacao_Armazenamento localizacao;

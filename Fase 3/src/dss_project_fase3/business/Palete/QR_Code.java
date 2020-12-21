@@ -1,4 +1,4 @@
-package dss_project_fase3.business;
+package dss_project_fase3.business.Palete;
 
 public class QR_Code {
     private String codigo;

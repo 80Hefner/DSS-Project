@@ -1,4 +1,4 @@
-package dss_project_fase3.business;
+package dss_project_fase3.business.Palete;
 
 import dss_project_fase3.business.Localizacao.Localizacao;
 
@@ -51,6 +51,16 @@ public class Palete {
         return this.qr_code.equals(p.getQr_code()) &&
                 this.material.equals(p.getMaterial()) &&
                 this.localizacao.equals(p.getLocalizacao());
+    }
+
+    public String toString(String offset) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(offset).append("Palete: ").append(this.qr_code.getCodigo()).append("\n");
+        sb.append(this.material.toString(offset + "\t"));
+        sb.append(this.localizacao.toString(offset + "\t"));
+
+        return sb.toString();
     }
 
     public Palete clone() {

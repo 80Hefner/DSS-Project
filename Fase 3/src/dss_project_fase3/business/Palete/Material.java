@@ -1,4 +1,4 @@
-package dss_project_fase3.business;
+package dss_project_fase3.business.Palete;
 
 public class Material {
     private String designacao;
@@ -26,6 +26,8 @@ public class Material {
 
         return this.designacao.equals(m.getDesignacao());
     }
+
+    public String toString(String offset) { return offset + "Material: " + this.designacao + "\n"; }
 
     public Material clone() {
         return new Material(this);
