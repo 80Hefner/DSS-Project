@@ -246,12 +246,24 @@ public class PaleteDAO implements Map<QR_Code, Palete> {
 
 
     /**
-     * NÃO IMPLEMENTADO!
-     * @return ainda nada!
+     * @return Todos os QR_Code das paletes da base de dados
      */
     @Override
     public Set<QR_Code> keySet() {
-        throw new NullPointerException("Not implemented!");
+        Set<QR_Code> set = new HashSet<>();
+        try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
+             Statement stm = conn.createStatement();
+             ResultSet rs = stm.executeQuery("SELECT QR_CODE FROM paletes")) {
+            while (rs.next()) {   // Utilizamos o get para construir as paletes
+                String stringQR = rs.getString("QR_CODE");
+                set.add(new QR_Code(stringQR));
+            }
+        } catch (Exception e) {
+            // Database error!
+            e.printStackTrace();
+            throw new NullPointerException(e.getMessage());
+        }
+        return set;
     }
 
     /**
@@ -278,10 +290,26 @@ public class PaleteDAO implements Map<QR_Code, Palete> {
 
     /**
      * NÃO IMPLEMENTADO!
-     * @return ainda nada!
+     * @return Set com Entre Sets da base de dados
      */
     @Override
     public Set<Entry<QR_Code, Palete>> entrySet() {
-        throw new NullPointerException("public Set<Map.Entry<String,Aluno>> entrySet() not implemented!");
+        Set<Entry<QR_Code, Palete>> set = new HashSet<>();
+        try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
+             Statement stm = conn.createStatement();
+             ResultSet rs = stm.executeQuery("SELECT QR_CODE FROM paletes")) {
+            while (rs.next()) {   // Utilizamos o get para construir as paletes
+                String stringQR = rs.getString("QR_CODE");
+                QR_Code novoQR = new QR_Code(stringQR);
+                Palete novaPalete = this.get(novoQR);
+                Entry<QR_Code,Palete> entrada = new AbstractMap.SimpleEntry<>(novoQR,novaPalete);
+                set.add(entrada);
+            }
+        } catch (Exception e) {
+            // Database error!
+            e.printStackTrace();
+            throw new NullPointerException(e.getMessage());
+        }
+        return set;
     }
 }
