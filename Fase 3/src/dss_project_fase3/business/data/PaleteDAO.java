@@ -1,13 +1,10 @@
 package dss_project_fase3.business.data;
 
-import dss_project_fase3.business.Palete.Palete;
-import dss_project_fase3.business.Palete.QR_Code;
+import dss_project_fase3.business.Localizacao.*;
+import dss_project_fase3.business.Palete.*;
 
 import java.sql.*;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class PaleteDAO implements Map<QR_Code, Palete> {
     private static PaleteDAO singleton = null;
@@ -16,10 +13,12 @@ public class PaleteDAO implements Map<QR_Code, Palete> {
         try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
              Statement stm = conn.createStatement()) {
             String sql = "CREATE TABLE IF NOT EXISTS paletes (" +
-                    "Num varchar(10) NOT NULL PRIMARY KEY," +
-                    "Nome varchar(45) DEFAULT NULL," +
-                    "Email varchar(45) DEFAULT NULL," +
-                    "Turma varchar(10), foreign key(Turma) references turmas(Id))";  // Assume-se uma relação 1-n entre Turma e Aluno
+                    "QR_CODE varchar(100) NOT NULL PRIMARY KEY," +
+                    "NOME varchar(45) DEFAULT NULL," +
+                    "LOCALIZACAO varchar (20) DEFAULT NULL," +
+                    "CORREDOR int DEFAULT NULL," +
+                    "SETOR int DEFAULT NULL," +
+                    "ID_ROBOT int DEFAULT NULL)";  // Assume-se uma relação 1-n entre Turma e Aluno
             stm.executeUpdate(sql);
         } catch (SQLException e) {
             // Erro a criar tabela...
@@ -87,7 +86,7 @@ public class PaleteDAO implements Map<QR_Code, Palete> {
         try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
              Statement stm = conn.createStatement();
              ResultSet rs =
-                     stm.executeQuery("SELECT Num FROM paletes WHERE Num='"+key.toString()+"'")) {
+                     stm.executeQuery("SELECT QR_CODE FROM paletes WHERE QR_CODE='"+key.toString()+"'")) {
             r = rs.next();
         } catch (SQLException e) {
             // Database error!
@@ -126,10 +125,10 @@ public class PaleteDAO implements Map<QR_Code, Palete> {
         Palete a = null;
         try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
              Statement stm = conn.createStatement();
-             ResultSet rs = stm.executeQuery("SELECT * FROM paletes WHERE Num='"+key+"'")) {
+             ResultSet rs = stm.executeQuery("SELECT * FROM paletes WHERE QR_CODE='"+key.toString()+"'")) {
             if (rs.next()) {  // A chave existe na tabela
                 // Reconstruir o aluno com os dados obtidos da BD - a chave estranjeira da turma, não é utilizada aqui.
-                //a = new Palete(rs.getString("Num"), rs.getString("Nome"), rs.getString("Email"));   ->  VER ESTA PARTE
+                a = new Palete(rs.getString("RQ_CODE"), rs.getString("NOME"), rs.getString("LOCALIZACAO"), rs.getInt("CORREDOR"), rs.getInt("SETOR"), rs.getInt("ID_ROBOT"));
             }
         } catch (SQLException e) {
             // Database error!
@@ -157,9 +156,29 @@ public class PaleteDAO implements Map<QR_Code, Palete> {
              Statement stm = conn.createStatement()) {
 
             // Actualizar o aluno
-            //stm.executeUpdate(
-            //        "INSERT INTO alunos VALUES ('"+value.getNumero()+"', '"+value.getNome()+"', '"+value.getEmail()+"', NULL) " +
-            //                "ON DUPLICATE KEY UPDATE Nome=VALUES(Nome), Email=VALUES(Email)");
+
+            switch (value.getLocalizacao().getClass().getName()) {
+                case "Localizacao_Armazenamento":
+                    Localizacao_Armazenamento armazenamento = (Localizacao_Armazenamento) value.getLocalizacao();
+                    stm.executeUpdate(
+                            "INSERT INTO paletes VALUES ('"+value.getQr_code().getCodigo()+"', '"+value.getMaterial().getDesignacao()+"', '"+value.getLocalizacao().getZona().toString()+"',  " +armazenamento.getCorredor()+", " +armazenamento.getSetor()+", NULL) " +
+                                    "ON DUPLICATE KEY UPDATE NOME=VALUES(NOME), LOCALIZACAO=VALUES(LOCALIZACAO), CORREDOR=VALUES(armazenamento.getCorredor()), SETOR=VALUES(armazenamento.getSetor()), ID_ROBOT=NULL");
+                    break;
+
+                case "Localizacao_Robot":
+                    Localizacao_Robot robot = (Localizacao_Robot) value.getLocalizacao();
+                    stm.executeUpdate(
+                            "INSERT INTO paletes VALUES ('"+value.getQr_code().getCodigo()+"', '"+value.getMaterial().getDesignacao()+"', '"+value.getLocalizacao().getZona().toString()+"', NULL, NULL,"+robot.getId_robot()+") " +
+                                    "ON DUPLICATE KEY UPDATE NOME=VALUES(NOME), LOCALIZACAO=VALUES(LOCALIZACAO), CORREDOR=NULL, SETOR=NULL, ID_ROBOT=VALUES(robot.getId_robot())");
+                    break;
+
+                case "Localizacao_Transporte":
+                    stm.executeUpdate(
+                            "INSERT INTO paletes VALUES ('"+value.getQr_code().getCodigo()+"', '"+value.getMaterial().getDesignacao()+"', '"+value.getLocalizacao().getZona().toString()+"', NULL, NULL, NULL) " +
+                                    "ON DUPLICATE KEY UPDATE NOME=VALUES(NOME), LOCALIZACAO=VALUES(LOCALIZACAO), CORREDOR=NULL, SETOR=NULL, ID_ROBOT=NULL");
+                    break;
+
+            }
         } catch (SQLException e) {
             // Database error!
             e.printStackTrace();
@@ -183,7 +202,7 @@ public class PaleteDAO implements Map<QR_Code, Palete> {
         Palete t = this.get(key);
         try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
              Statement stm = conn.createStatement()) {
-            stm.executeUpdate("DELETE FROM paletes WHERE Num='"+key+"'");
+            stm.executeUpdate("DELETE FROM paletes WHERE QR_CODE='"+key.toString()+"'");
         } catch (Exception e) {
             // Database error!
             e.printStackTrace();
@@ -243,9 +262,10 @@ public class PaleteDAO implements Map<QR_Code, Palete> {
         Collection<Palete> col = new HashSet<>();
         try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
              Statement stm = conn.createStatement();
-             ResultSet rs = stm.executeQuery("SELECT Num FROM paletes")) {
+             ResultSet rs = stm.executeQuery("SELECT QR_CODE FROM paletes")) {
             while (rs.next()) {   // Utilizamos o get para construir as paletes
-                col.add(this.get(rs.getString("Num")));
+                String stringQR = rs.getString("QR_CODE");
+                col.add(this.get( new QR_Code(stringQR) ));
             }
         } catch (Exception e) {
             // Database error!

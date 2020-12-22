@@ -1,6 +1,7 @@
 package dss_project_fase3.business.Palete;
 
-import dss_project_fase3.business.Localizacao.Localizacao;
+import dss_project_fase3.business.Localizacao.*;
+import static dss_project_fase3.business.Enums.ZonaArmazem.*;
 
 public class Palete {
     private QR_Code qr_code;
@@ -11,6 +12,25 @@ public class Palete {
         this.qr_code = qr_code;
         this.material = material;
         this.localizacao = localizacao;
+    }
+
+    public Palete(String qr_code, String material, String localizacao, int corredor, int setor, int id_robot) {
+        this.qr_code = new QR_Code(qr_code);
+        this.material = new Material(material);
+        switch (localizacao){
+            case "ZONA_RECECAO":
+                this.localizacao = new Localizacao_Transporte(ZONA_RECECAO);
+                break;
+            case "ZONA_ENTREGA":
+                this.localizacao = new Localizacao_Transporte(ZONA_ENTREGA);
+                break;
+            case "ZONA_ARMAZENAMENTO":
+                this.localizacao = new Localizacao_Armazenamento(corredor,setor);
+                break;
+            case "ROBOT":
+                this.localizacao = new Localizacao_Robot(id_robot);
+                break;
+        }
     }
 
     public Palete(Palete p) {
