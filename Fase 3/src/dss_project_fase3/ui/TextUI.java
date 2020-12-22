@@ -97,7 +97,7 @@ public class TextUI {
             QR_Code qr_code = new QR_Code(qr_code_str);
             qr_code.isValid();
 
-            this.model.notificar_recolha_palete(new QR_Code(qr_code));
+            this.model.notificar_recolha_palete(new QR_Code(qr_code), 1); // TODO: verificar id_robot
         }
         catch (NullPointerException en) {
             System.out.println(en.getMessage());
@@ -114,7 +114,7 @@ public class TextUI {
             QR_Code qr_code = new QR_Code(qr_code_str);
             qr_code.isValid();
 
-            this.model.notificar_entrega_palete(new QR_Code(qr_code));
+            this.model.notificar_entrega_palete(new QR_Code(qr_code), 1); // TODO: verificar id_robot
         }
         catch (NullPointerException en) {
             System.out.println(en.getMessage());

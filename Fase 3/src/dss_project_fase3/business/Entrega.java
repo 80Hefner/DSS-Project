@@ -4,28 +4,28 @@ import dss_project_fase3.business.Localizacao.Localizacao;
 import dss_project_fase3.business.Palete.Palete;
 
 public class Entrega {
-    private Palete palete;
+    private String qr_code;
     private Localizacao origem;
     private Localizacao destino;
 
-    public Entrega(Palete palete, Localizacao origem, Localizacao destino) {
-        this.palete = palete;
+    public Entrega(String qr_code, Localizacao origem, Localizacao destino) {
+        this.qr_code = qr_code;
         this.origem = origem;
         this.destino = destino;
     }
 
     public Entrega(Entrega e) {
-        this.palete = e.getPalete();
+        this.qr_code = e.getQr_code();
         this.origem = e.getOrigem();
         this.destino = e.getDestino();
     }
 
-    public Palete getPalete() {
-        return palete.clone();
+    public String getQr_code() {
+        return qr_code;
     }
 
-    public void setPalete(Palete palete) {
-        this.palete = palete.clone();
+    public void setQr_code(String qr_code) {
+        this.qr_code = qr_code;
     }
 
     public Localizacao getOrigem() {
@@ -49,7 +49,7 @@ public class Entrega {
         else if (o == null || this.getClass() != o.getClass()) return false;
         Entrega e = (Entrega) o;
 
-        return this.palete.equals(e.getPalete()) &&
+        return this.qr_code.equals(e.getQr_code()) &&
                 this.origem.equals(e.getOrigem()) &&
                 this.destino.equals(e.getDestino());
     }
@@ -58,7 +58,7 @@ public class Entrega {
         StringBuilder sb = new StringBuilder();
 
         sb.append(offset).append("Entrega: ").append("\n");
-        sb.append(this.palete.toString(offset + "\t"));
+        sb.append(offset).append("Palete: ").append(this.qr_code).append("\n");
         sb.append(offset).append("Origem:").append("\n");
         sb.append(this.origem.toString(offset + "\t"));
         sb.append(offset).append("Destino:").append("\n");

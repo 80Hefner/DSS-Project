@@ -1,4 +1,4 @@
-package dss_project_fase3.business.data;
+package dss_project_fase3.data;
 
 import dss_project_fase3.business.Localizacao.*;
 import dss_project_fase3.business.Palete.*;
@@ -6,7 +6,7 @@ import dss_project_fase3.business.Palete.*;
 import java.sql.*;
 import java.util.*;
 
-public class PaleteDAO implements Map<QR_Code, Palete> {
+public class PaleteDAO implements IPaleteDAO {
     private static PaleteDAO singleton = null;
 
     public PaleteDAO() {
@@ -14,7 +14,7 @@ public class PaleteDAO implements Map<QR_Code, Palete> {
              Statement stm = conn.createStatement()) {
             String sql = "CREATE TABLE IF NOT EXISTS paletes (" +
                     "QR_CODE varchar(100) NOT NULL PRIMARY KEY," +
-                    "NOME varchar(45) DEFAULT NULL," +
+                    "MATERIAL varchar(45) DEFAULT NULL," +
                     "LOCALIZACAO varchar (20) DEFAULT NULL," +
                     "CORREDOR int DEFAULT NULL," +
                     "SETOR int DEFAULT NULL," +
@@ -125,10 +125,10 @@ public class PaleteDAO implements Map<QR_Code, Palete> {
         Palete a = null;
         try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
              Statement stm = conn.createStatement();
-             ResultSet rs = stm.executeQuery("SELECT * FROM paletes WHERE QR_CODE='"+key.toString()+"'")) {
+             ResultSet rs = stm.executeQuery("SELECT * FROM paletes WHERE QR_CODE='"+key+"'")) {
             if (rs.next()) {  // A chave existe na tabela
                 // Reconstruir o aluno com os dados obtidos da BD - a chave estranjeira da turma, não é utilizada aqui.
-                a = new Palete(rs.getString("RQ_CODE"), rs.getString("NOME"), rs.getString("LOCALIZACAO"), rs.getInt("CORREDOR"), rs.getInt("SETOR"), rs.getInt("ID_ROBOT"));
+                a = new Palete(rs.getString("QR_CODE"), rs.getString("MATERIAL"), rs.getString("LOCALIZACAO"), rs.getInt("CORREDOR"), rs.getInt("SETOR"), rs.getInt("ID_ROBOT"));
             }
         } catch (SQLException e) {
             // Database error!
@@ -150,32 +150,31 @@ public class PaleteDAO implements Map<QR_Code, Palete> {
      * @throws NullPointerException Em caso de erro - deveriam ser criadas exepções do projecto
      */
     @Override
-    public Palete put(QR_Code key, Palete value) {
+    public Palete put(String key, Palete value) {
         Palete res = null;
         try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
              Statement stm = conn.createStatement()) {
 
-            // Actualizar o aluno
-
-            switch (value.getLocalizacao().getClass().getName()) {
+            switch (value.getLocalizacao().getClass().getSimpleName()) {
                 case "Localizacao_Armazenamento":
                     Localizacao_Armazenamento armazenamento = (Localizacao_Armazenamento) value.getLocalizacao();
                     stm.executeUpdate(
                             "INSERT INTO paletes VALUES ('"+value.getQr_code().getCodigo()+"', '"+value.getMaterial().getDesignacao()+"', '"+value.getLocalizacao().getZona().toString()+"',  " +armazenamento.getCorredor()+", " +armazenamento.getSetor()+", NULL) " +
-                                    "ON DUPLICATE KEY UPDATE NOME=VALUES(NOME), LOCALIZACAO=VALUES(LOCALIZACAO), CORREDOR=VALUES(armazenamento.getCorredor()), SETOR=VALUES(armazenamento.getSetor()), ID_ROBOT=NULL");
+                                    "ON DUPLICATE KEY UPDATE MATERIAL=VALUES(MATERIAL), LOCALIZACAO=('"+armazenamento.getZona().toString()+"'), CORREDOR=("+armazenamento.getCorredor()+"), SETOR=("+armazenamento.getSetor()+"), ID_ROBOT=NULL");
                     break;
 
                 case "Localizacao_Robot":
                     Localizacao_Robot robot = (Localizacao_Robot) value.getLocalizacao();
                     stm.executeUpdate(
                             "INSERT INTO paletes VALUES ('"+value.getQr_code().getCodigo()+"', '"+value.getMaterial().getDesignacao()+"', '"+value.getLocalizacao().getZona().toString()+"', NULL, NULL,"+robot.getId_robot()+") " +
-                                    "ON DUPLICATE KEY UPDATE NOME=VALUES(NOME), LOCALIZACAO=VALUES(LOCALIZACAO), CORREDOR=NULL, SETOR=NULL, ID_ROBOT=VALUES(robot.getId_robot())");
+                                    "ON DUPLICATE KEY UPDATE MATERIAL=VALUES(MATERIAL), LOCALIZACAO=('"+robot.getZona().toString()+"'), CORREDOR=NULL, SETOR=NULL, ID_ROBOT=("+robot.getId_robot()+")");
                     break;
 
                 case "Localizacao_Transporte":
+                    Localizacao_Transporte transporte = (Localizacao_Transporte) value.getLocalizacao();
                     stm.executeUpdate(
                             "INSERT INTO paletes VALUES ('"+value.getQr_code().getCodigo()+"', '"+value.getMaterial().getDesignacao()+"', '"+value.getLocalizacao().getZona().toString()+"', NULL, NULL, NULL) " +
-                                    "ON DUPLICATE KEY UPDATE NOME=VALUES(NOME), LOCALIZACAO=VALUES(LOCALIZACAO), CORREDOR=NULL, SETOR=NULL, ID_ROBOT=NULL");
+                                    "ON DUPLICATE KEY UPDATE MATERIAL=VALUES(MATERIAL), LOCALIZACAO=('"+transporte.getZona().toString()+"'), CORREDOR=NULL, SETOR=NULL, ID_ROBOT=NULL");
                     break;
 
             }
@@ -219,9 +218,9 @@ public class PaleteDAO implements Map<QR_Code, Palete> {
      * @throws NullPointerException Em caso de erro - deveriam ser criadas exepções do projecto
      */
     @Override
-    public void putAll(Map<? extends QR_Code, ? extends Palete> paletesNovas) {
+    public void putAll(Map<? extends String, ? extends Palete> paletesNovas) {
         for (Palete a : paletesNovas.values()) {
-            this.put(a.getQr_code(), a);
+            this.put(a.getQr_code().getCodigo(), a);
         }
     }
 
@@ -249,14 +248,14 @@ public class PaleteDAO implements Map<QR_Code, Palete> {
      * @return Todos os QR_Code das paletes da base de dados
      */
     @Override
-    public Set<QR_Code> keySet() {
-        Set<QR_Code> set = new HashSet<>();
+    public Set<String> keySet() {
+        Set<String> set = new HashSet<>();
         try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
              Statement stm = conn.createStatement();
              ResultSet rs = stm.executeQuery("SELECT QR_CODE FROM paletes")) {
             while (rs.next()) {   // Utilizamos o get para construir as paletes
                 String stringQR = rs.getString("QR_CODE");
-                set.add(new QR_Code(stringQR));
+                set.add(stringQR);
             }
         } catch (Exception e) {
             // Database error!
@@ -277,7 +276,7 @@ public class PaleteDAO implements Map<QR_Code, Palete> {
              ResultSet rs = stm.executeQuery("SELECT QR_CODE FROM paletes")) {
             while (rs.next()) {   // Utilizamos o get para construir as paletes
                 String stringQR = rs.getString("QR_CODE");
-                col.add(this.get( new QR_Code(stringQR) ));
+                col.add(this.get(stringQR));
             }
         } catch (Exception e) {
             // Database error!
@@ -293,16 +292,15 @@ public class PaleteDAO implements Map<QR_Code, Palete> {
      * @return Set com Entre Sets da base de dados
      */
     @Override
-    public Set<Entry<QR_Code, Palete>> entrySet() {
-        Set<Entry<QR_Code, Palete>> set = new HashSet<>();
+    public Set<Entry<String, Palete>> entrySet() {
+        Set<Entry<String, Palete>> set = new HashSet<>();
         try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
              Statement stm = conn.createStatement();
              ResultSet rs = stm.executeQuery("SELECT QR_CODE FROM paletes")) {
             while (rs.next()) {   // Utilizamos o get para construir as paletes
                 String stringQR = rs.getString("QR_CODE");
-                QR_Code novoQR = new QR_Code(stringQR);
-                Palete novaPalete = this.get(novoQR);
-                Entry<QR_Code,Palete> entrada = new AbstractMap.SimpleEntry<>(novoQR,novaPalete);
+                Palete novaPalete = this.get(stringQR);
+                Entry<String,Palete> entrada = new AbstractMap.SimpleEntry<>(stringQR,novaPalete);
                 set.add(entrada);
             }
         } catch (Exception e) {
@@ -311,5 +309,37 @@ public class PaleteDAO implements Map<QR_Code, Palete> {
             throw new NullPointerException(e.getMessage());
         }
         return set;
+    }
+
+
+    public void atualizaLocalizacao(Localizacao localizacao, String qr_code) {
+        try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
+             Statement stm = conn.createStatement()) {
+
+            switch (localizacao.getClass().getSimpleName()) {
+                case "Localizacao_Armazenamento":
+                    Localizacao_Armazenamento armazenamento = (Localizacao_Armazenamento) localizacao;
+                    stm.executeUpdate(
+                            "UPDATE paletes SET LOCALIZACAO=('"+armazenamento.getZona().toString()+"'), CORREDOR=("+armazenamento.getCorredor()+"), SETOR=("+armazenamento.getSetor()+"), ID_ROBOT=NULL WHERE QR_CODE = '"+qr_code+"'");
+                    break;
+
+                case "Localizacao_Robot":
+                    Localizacao_Robot robot = (Localizacao_Robot) localizacao;
+                    stm.executeUpdate(
+                            "UPDATE paletes SET LOCALIZACAO=('"+robot.getZona().toString()+"'), CORREDOR=NULL, SETOR=NULL, ID_ROBOT=("+robot.getId_robot()+") WHERE QR_CODE = '"+qr_code+"'");
+                    break;
+
+                case "Localizacao_Transporte":
+                    Localizacao_Transporte transporte = (Localizacao_Transporte) localizacao;
+                    stm.executeUpdate(
+                            "UPDATE paletes SET LOCALIZACAO=('"+transporte.getZona().toString()+"'), CORREDOR=NULL, SETOR=NULL, ID_ROBOT=NULL WHERE QR_CODE = '"+qr_code+"'");
+                    break;
+
+            }
+        } catch (SQLException e) {
+            // Database error!
+            e.printStackTrace();
+            throw new NullPointerException(e.getMessage());
+        }
     }
 }
