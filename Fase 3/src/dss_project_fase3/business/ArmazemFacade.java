@@ -6,6 +6,7 @@ import dss_project_fase3.business.Enums.ZonaArmazem;
 import dss_project_fase3.business.Exceptions.EmptyTransportQueueException;
 import dss_project_fase3.business.Exceptions.InvalidRequestFromRobot;
 import dss_project_fase3.business.Exceptions.InvalidRobotIDException;
+import dss_project_fase3.business.Exceptions.InvalidTransportOrderException;
 import dss_project_fase3.business.Localizacao.Localizacao_Armazenamento;
 import dss_project_fase3.business.Localizacao.Localizacao_Robot;
 import dss_project_fase3.business.Localizacao.Localizacao_Transporte;
@@ -65,20 +66,25 @@ public class ArmazemFacade implements IArmazemFacade{
     /**
      * Função responsável por comunicar uma ordem de transporte
      * @throws EmptyTransportQueueException     Excepção de quando não existem paletes para serem transportadas
+     * @throws InvalidTransportOrderException   Exceção de quando não existe armazenamento disponível ou robots disponíveis
      */
     @Override
-    public void comunicar_ordem_transporte() throws EmptyTransportQueueException {
+    public void comunicar_ordem_transporte() throws EmptyTransportQueueException, InvalidTransportOrderException {
         if (this.paletes_para_transporte.isEmpty()) throw new EmptyTransportQueueException();
 
-        String qr_code = this.paletes_para_transporte.remove(0);
+        String qr_code = this.paletes_para_transporte.get(0);
         Palete pal = this.paletes.get(qr_code);
 
+        if (this.prateleirasLivres.isEmpty()) throw new InvalidTransportOrderException(0);
+
         Prateleira prat = getPrateleiraDisponivel();
-        this.prateleirasLivres.remove(prat);
-
         Entrega e = new Entrega(pal.getQr_code().getCodigo(), pal.getLocalizacao(), prat.getLocalizacao());
-
         Robot r = getMelhorRobotDisponivel();
+
+        if (r==null) throw new InvalidTransportOrderException(1);
+
+        this.paletes_para_transporte.remove(0);
+        this.prateleirasLivres.remove(prat);
         this.robots.recolhePalete(r.getId_robot(), e);
     }
 

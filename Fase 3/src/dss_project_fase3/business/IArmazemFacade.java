@@ -3,6 +3,7 @@ package dss_project_fase3.business;
 import dss_project_fase3.business.Exceptions.EmptyTransportQueueException;
 import dss_project_fase3.business.Exceptions.InvalidRequestFromRobot;
 import dss_project_fase3.business.Exceptions.InvalidRobotIDException;
+import dss_project_fase3.business.Exceptions.InvalidTransportOrderException;
 import dss_project_fase3.business.Palete.Palete;
 import dss_project_fase3.business.Palete.QR_Code;
 
@@ -22,8 +23,9 @@ public interface IArmazemFacade {
     /**
      * Função responsável por comunicar uma ordem de transporte
      * @throws EmptyTransportQueueException     Excepção de quando não existem paletes para serem transportadas
+     * @throws InvalidTransportOrderException   Exceção de quando não existe armazenamento disponível ou robots disponíveis
      */
-    void comunicar_ordem_transporte() throws EmptyTransportQueueException;
+    void comunicar_ordem_transporte() throws EmptyTransportQueueException, InvalidTransportOrderException;
 
     /**
      * Função responsável por comunicar recolha da Palete por parte do Robot
