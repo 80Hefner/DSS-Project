@@ -1,5 +1,6 @@
 package dss_project_fase3.business;
 
+import dss_project_fase3.business.Comparators.ComparatorDistanciaRobots;
 import dss_project_fase3.business.Enums.RobotRequest;
 import dss_project_fase3.business.Enums.ZonaArmazem;
 import dss_project_fase3.business.Exceptions.EmptyTransportQueueException;
@@ -15,7 +16,6 @@ import dss_project_fase3.business.Robot.Robot;
 import dss_project_fase3.data.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class ArmazemFacade implements IArmazemFacade{
     private IPrateleiraDAO prateleiras;
@@ -83,6 +83,7 @@ public class ArmazemFacade implements IArmazemFacade{
 
 
         this.paletes.atualizaLocalizacao(new Localizacao_Robot(id_robot), qr_code);
+        this.robots.encontraChegada(id_robot, entrega.getOrigem());
     }
 
     @Override
@@ -125,6 +126,7 @@ public class ArmazemFacade implements IArmazemFacade{
                 .values()
                 .stream()
                 .filter(Robot::isDisponivel)
+                .sorted(new ComparatorDistanciaRobots())
                 .findFirst()
                 .ifPresent(r -> robot[0] = r);
 
