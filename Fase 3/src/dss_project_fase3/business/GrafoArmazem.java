@@ -1,5 +1,6 @@
 package dss_project_fase3.business;
 
+import dss_project_fase3.business.Prateleira.Prateleira;
 import dss_project_fase3.utils.Enums.ZonaArmazem;
 import dss_project_fase3.business.Localizacao.Localizacao;
 import dss_project_fase3.business.Localizacao.Localizacao_Armazenamento;
@@ -11,11 +12,17 @@ import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import org.jgrapht.graph.*;
 
 import java.util.List;
+import java.util.Set;
 
-
+/**
+ * Classe GrafoArmazem
+ */
 public class GrafoArmazem {
     Graph<Vertex, DefaultWeightedEdge> grafo;
 
+    /**
+     * Construtor por omissão da classe GrafoArmazem
+     */
     public GrafoArmazem() {
         this.grafo = new SimpleWeightedGraph<>(DefaultWeightedEdge.class);
 
@@ -46,6 +53,12 @@ public class GrafoArmazem {
         grafo.setEdgeWeight(grafo.addEdge(Vertex.P13, Vertex.P14), 5);
     }
 
+    /**
+     * Método que encontra o robot disponível mais próximo da localização recebida
+     * @param robots Robots disponíveis no armazém
+     * @param destino Localização de referência
+     * @return ID do Robot mais próximo
+     */
     public int getMelhorRobot(List<Robot> robots, Localizacao destino) {
         Vertex v_destino = Vertex.localizacaoToVertex(destino);
         double menor_custo = Integer.MAX_VALUE;
@@ -66,11 +79,45 @@ public class GrafoArmazem {
 
         return id_robot_escolhido;
     }
+
+    /**
+     * Método que encontra a prateleira livre mais próxima da Zona de Receção
+     * @param prateleiras Prateleiras livres no armazém
+     * @return Prateleira mais próxima
+     */
+    public Prateleira getMelhorPrateleira(Set<Prateleira> prateleiras) {
+        Vertex v_origem = Vertex.ZONA_RECECAO;
+        double menor_custo = Integer.MAX_VALUE;
+        Prateleira prat_escolhida = null;
+
+        for (Prateleira p : prateleiras) {
+            Vertex v_destino = Vertex.localizacaoToVertex(p.getLocalizacao());
+
+            DijkstraShortestPath<Vertex,DefaultWeightedEdge> dijkstraAlg = new DijkstraShortestPath<>(this.grafo);
+            ShortestPathAlgorithm.SingleSourcePaths<Vertex, DefaultWeightedEdge> iPaths = dijkstraAlg.getPaths(v_destino);
+            double custo = iPaths.getWeight(v_origem);
+
+            if (custo < menor_custo) {
+                prat_escolhida = p;
+                menor_custo = custo;
+            }
+        }
+
+        return prat_escolhida;
+    }
 }
 
+/**
+ * Enum para facilitar a designação das localizações do armazém
+ */
 enum Vertex {
     ZONA_RECECAO, P00, P01, P02, P03, P04, P10, P11, P12, P13, P14;
 
+    /**
+     * Método que traduz uma localização no armazém do tipo 'Localizacao' para 'Vertex'
+     * @param localizacao Localização a ser traduzida
+     * @return Localização em questão, no tipo 'Vertex'
+     */
     public static Vertex localizacaoToVertex(Localizacao localizacao) {
         Vertex v = null;
 

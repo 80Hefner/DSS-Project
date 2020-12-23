@@ -4,9 +4,9 @@ import dss_project_fase3.business.Localizacao.Localizacao_Armazenamento;
 import dss_project_fase3.business.Palete.Palete;
 
 /**
- * Classe Prateleira que implementa o seu Comparable
+ * Classe Prateleira
  */
-public class Prateleira implements Comparable<Prateleira>{
+public class Prateleira {
     private final Localizacao_Armazenamento localizacao;
     private String qr_code;
 
@@ -69,14 +69,5 @@ public class Prateleira implements Comparable<Prateleira>{
      */
     public boolean equals(Object o) {
         return this == o;
-    }
-
-    /**
-     * Função que faz a comparação Natural a ser usada pela Prateleira sempre
-     * @param p    Prateleira ao qual queremos comparar o this
-     * @return     Inteiro que vai servir de comparação
-     */
-    public int compareTo(Prateleira p) {
-        return this.localizacao.compareTo(p.getLocalizacao());
     }
 }

@@ -79,9 +79,8 @@ public class ArmazemFacade implements IArmazemFacade{
         String qr_code = this.paletes_para_transporte.get(0);
         Palete pal = this.paletes.get(qr_code);
 
-        if (this.prateleirasLivres.isEmpty()) throw new InvalidTransportOrderException(TransportOrderError.ARMAZEM_CHEIO);
+        Prateleira prat = getMelhorPrateleiraDisponivel();
 
-        Prateleira prat = getPrateleiraDisponivel();
         Entrega e = new Entrega(pal.getQr_code().getCodigo(), pal.getLocalizacao(), prat.getLocalizacao());
 
         Robot r = this.robots.get(getMelhorRobotDisponivel(pal.getLocalizacao()));
@@ -150,17 +149,13 @@ public class ArmazemFacade implements IArmazemFacade{
     }
 
     /**
-     * Função que procura a palete disponível mais próxima.
+     * Função que procura a prateleira disponível mais próxima.
      * @return      Prateleira Selecionada
      */
-    private Prateleira getPrateleiraDisponivel() {  // TODO: esta uma merda
-        final Prateleira[] prateleira = {null};
-        this.prateleirasLivres
-                .stream()
-                .findAny()
-                .ifPresent(p -> prateleira[0] = p);
+    private Prateleira getMelhorPrateleiraDisponivel() throws InvalidTransportOrderException {  // TODO: esta uma merda
+        if (this.prateleirasLivres.isEmpty()) throw new InvalidTransportOrderException(TransportOrderError.ARMAZEM_CHEIO);
 
-        return prateleira[0];
+        return this.grafo_armazem.getMelhorPrateleira(this.prateleirasLivres);
     }
 
     /**
@@ -172,6 +167,6 @@ public class ArmazemFacade implements IArmazemFacade{
 
         if (robots_disponiveis.isEmpty()) throw new InvalidTransportOrderException(TransportOrderError.ROBOTS_INDISPONIVEIS);
 
-        return grafo_armazem.getMelhorRobot(robots_disponiveis, origem);
+        return this.grafo_armazem.getMelhorRobot(robots_disponiveis, origem);
     }
 }
