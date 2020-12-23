@@ -9,6 +9,9 @@ import dss_project_fase3.business.Robot.Robot;
 import java.sql.*;
 import java.util.*;
 
+/**
+ * Classe RobotDAO que implementa a interface IRobotDAO
+ */
 public class RobotDAO implements IRobotDAO{
 
     private static RobotDAO singleton = null;
@@ -28,7 +31,7 @@ public class RobotDAO implements IRobotDAO{
                     "SETOR_ORIGEM int DEFAULT NULL," +
                     "LOCALIZACAO_DESTINO varchar (20) DEFAULT NULL," +
                     "CORREDOR_DESTINO int DEFAULT NULL," +
-                    "SETOR_DESTINO int DEFAULT NULL)";  // Assume-se uma relação 1-n entre Turma e Aluno
+                    "SETOR_DESTINO int DEFAULT NULL)";
             stm.executeUpdate(sql);
         } catch (SQLException e) {
             // Erro a criar tabela...
@@ -51,6 +54,10 @@ public class RobotDAO implements IRobotDAO{
     }
 
 
+    /**
+     * @return número de robots na base de dados
+     * @throws NullPointerException Em caso de erro
+     */
     @Override
     public int size() {
         int i = 0;
@@ -69,11 +76,22 @@ public class RobotDAO implements IRobotDAO{
         return i;
     }
 
+    /**
+     * Método que verifica se existem robots
+     * @return true se existirem 0 robots
+     */
     @Override
     public boolean isEmpty() {
         return this.size() == 0;
     }
 
+
+    /**
+     * Método que verifica se um id_robot de um Robot existe na base de dados
+     * @param key id_Robot de um Robot
+     * @return true se o Robot existe
+     * @throws NullPointerException Em caso de erro
+     */
     @Override
     public boolean containsKey(Object key) {
         boolean r;
@@ -90,12 +108,27 @@ public class RobotDAO implements IRobotDAO{
         return r;
     }
 
+
+    /**
+     * Verifica se uma Robot existe na base de dados
+     * @param value     Robot que queremos procurar na Base de Dados
+     * @return          true se a Base de Dados possui o Robot
+     * @throws NullPointerException     Em caso de erro
+     */
     @Override
     public boolean containsValue(Object value) {
         Robot a = (Robot) value;
         return this.containsKey(a.getId_robot());
     }
 
+
+    /**
+     * Obter um Robot, dado o seu id_robot
+     *
+     * @param key   id_robot do Robot
+     * @return      Robot caso exista (null noutro caso)
+     * @throws NullPointerException     Em caso de erro
+     */
     @Override
     public Robot get(Object key) {
         Robot a = null;
@@ -128,11 +161,21 @@ public class RobotDAO implements IRobotDAO{
         return a;
     }
 
+
+    /**
+     * Insere um Robot na base de dados
+     * @param key       id_Robot do Robot
+     * @param value     Robot
+     * @return          Robot existente anteriormente na base de dados (null caso não existisse)
+     * @throws NullPointerException     Em caso de erro
+     */
     @Override
     public Robot put(Integer key, Robot value) {
-        Robot res = null;
+        Robot res;
         try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
              Statement stm = conn.createStatement()) {
+
+            res=this.get(key);
 
             // É partido do pressuposto que o robot só transporta (ZONA_RECECAO -> ZONA_ARMAZENAMENTO e ZONA_ARMAZENAMENTO -> ZONA_ENTREGA)
             // É ainda de notar que LocalizaçãoAtual vai ser igual a LocalizaçãoOrigem
@@ -164,6 +207,13 @@ public class RobotDAO implements IRobotDAO{
         return res;
     }
 
+
+    /**
+     * Remover um Robot, dado o seu id_Robot
+     * @param key   id_Robot do Robot a remover
+     * @return      Robot removido
+     * @throws NullPointerException     Em caso de erro
+     */
     @Override
     public Robot remove(Object key) {
         Robot t = this.get(key);
@@ -178,6 +228,12 @@ public class RobotDAO implements IRobotDAO{
         return t;
     }
 
+
+    /**
+     * Adicionar um conjunto de Robots à base de dados
+     * @param robotsNovos      os Robots a adicionar
+     * @throws NullPointerException     Em caso de erro
+     */
     @Override
     public void putAll(Map<? extends Integer, ? extends Robot> robotsNovos) {
         for (Robot a : robotsNovos.values()) {
@@ -185,6 +241,11 @@ public class RobotDAO implements IRobotDAO{
         }
     }
 
+
+    /**
+     * Apagar todos os Robots
+     * @throws NullPointerException     Em caso de erro
+     */
     @Override
     public void clear() {
         try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
@@ -197,6 +258,12 @@ public class RobotDAO implements IRobotDAO{
         }
     }
 
+
+    /**
+     * Função que dá um set com todas as keys
+     * @return  Set com todos os id_Robot dos Robots da base de dados
+     * @throws NullPointerException     Em caso de erro
+     */
     @Override
     public Set<Integer> keySet() {
         Set<Integer> set = new HashSet<>();
@@ -214,6 +281,12 @@ public class RobotDAO implements IRobotDAO{
         return set;
     }
 
+
+    /**
+     * Função que dá um set com todas os values (Robots)
+     * @return      Collection com todos os Robots da base de dados
+     * @throws NullPointerException     Em caso de erro
+     */
     @Override
     public Collection<Robot> values() {
         Collection<Robot> col = new HashSet<>();
@@ -232,6 +305,12 @@ public class RobotDAO implements IRobotDAO{
         return col;
     }
 
+
+    /**
+     * Função que dá um set com todos os entrySets da base de Dados
+     * @return      Set com todos os entrySets da base de Dados
+     * @throws NullPointerException     Em caso de erro
+     */
     @Override
     public Set<Entry<Integer, Robot>> entrySet() {
         Set<Entry<Integer, Robot>> set = new HashSet<>();
@@ -253,6 +332,11 @@ public class RobotDAO implements IRobotDAO{
     }
 
 
+    /**
+     * Funçaõ que altera parametros necessarios de um Robot quando este realiza uma Entrega
+     * @param id_robot      id_Robot que realiza a Entrega
+     * @throws NullPointerException     Em caso de erro
+     */
     @Override
     public void entregaRealizada(Integer id_robot) {
         try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
@@ -277,6 +361,13 @@ public class RobotDAO implements IRobotDAO{
         }
     }
 
+
+    /**
+     * Funçaõ que altera parametros necessarios de um Robot quando este aceita realizar uma Entrega
+     * @param id_robot          id_Robot que realiza a Entrega
+     * @param entrega           Entrega a ser realizada
+     * @throws NullPointerException     Em caso de erro
+     */
     @Override
     public void recolhePalete(Integer id_robot, Entrega entrega) {
         try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
@@ -308,6 +399,13 @@ public class RobotDAO implements IRobotDAO{
         }
     }
 
+
+    /**
+     * Funçaõ que altera parametros necessarios de um Robot quando este recolhe uma Entrega
+     * @param id_robot              id_Robot respetivo à Entrega
+     * @param localizacaoNova       novaLocalizacaoAtual do Robot
+     * @throws NullPointerException     Em caso de erro
+     */
     public void encontraChegada (Integer id_robot, Localizacao localizacaoNova) {
         try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
              Statement stm = conn.createStatement()) {

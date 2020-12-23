@@ -24,6 +24,11 @@ public class ArmazemFacade implements IArmazemFacade{
     private List<String> paletes_para_transporte;
     private IRobotDAO robots;
 
+    /**
+     * Construtor parametrizado do ArmazemFacade
+     * @param nrCorredores      numero de Corredores do Armazem
+     * @param nrSetores         numero de Setores do Armazem
+     */
     public ArmazemFacade(int nrCorredores, int nrSetores) {
         this.prateleiras = PrateleiraDAO.getInstance();
         this.prateleirasLivres = new TreeSet<>();
@@ -45,6 +50,10 @@ public class ArmazemFacade implements IArmazemFacade{
     }
 
 
+    /**
+     * Função responsável por comunicar um Código QR ao Sistema
+     * @param qr_code       QR_Code a ser comunicado
+     */
     @Override
     public void comunicar_codigo_qr(QR_Code qr_code) {
         Palete p = new Palete (qr_code.clone(), new Material(qr_code.getMaterial()), new Localizacao_Transporte(ZonaArmazem.ZONA_RECECAO));
@@ -53,6 +62,10 @@ public class ArmazemFacade implements IArmazemFacade{
         this.paletes_para_transporte.add(p.getQr_code().getCodigo());
     }
 
+    /**
+     * Função responsável por comunicar uma ordem de transporte
+     * @throws EmptyTransportQueueException     Excepção de quando não existem paletes para serem transportadas
+     */
     @Override
     public void comunicar_ordem_transporte() throws EmptyTransportQueueException {
         if (this.paletes_para_transporte.isEmpty()) throw new EmptyTransportQueueException();
@@ -69,6 +82,12 @@ public class ArmazemFacade implements IArmazemFacade{
         this.robots.recolhePalete(r.getId_robot(), e);
     }
 
+    /**
+     * Função responsável por comunicar recolha da Palete por parte do Robot
+     * @param id_robot                      id do Robot que recolhe a palete
+     * @throws InvalidRobotIDException      Excepção de quando id do robot é inválido
+     * @throws InvalidRequestFromRobot      Exceção de quando recolha não pode ser efetuada
+     */
     @Override
     public void notificar_recolha_palete(int id_robot) throws InvalidRobotIDException, InvalidRequestFromRobot {
         Robot robot = this.robots.get(id_robot);
@@ -86,6 +105,12 @@ public class ArmazemFacade implements IArmazemFacade{
         this.robots.encontraChegada(id_robot, entrega.getOrigem());
     }
 
+    /**
+     * Função responsável por comunicar entrega da Palete por parte do Robot
+     * @param id_robot                      id do Robot que recolhe a palete
+     * @throws InvalidRobotIDException      Excepção de quando id do robot é inválido
+     * @throws InvalidRequestFromRobot      Exceção de quando entrega não pode ser efetuada
+     */
     @Override
     public void notificar_entrega_palete(int id_robot) throws InvalidRobotIDException, InvalidRequestFromRobot {
         Robot robot = this.robots.get(id_robot);
@@ -105,11 +130,19 @@ public class ArmazemFacade implements IArmazemFacade{
         this.robots.entregaRealizada(id_robot);
     }
 
+    /**
+     * Função que recolhe a listagem de todas as paletes no Sistema
+     * @return      List com todas as Paletes do Sistema
+     */
     @Override
     public List<Palete> consultar_listagem_localizacoes() {
         return new ArrayList<>(this.paletes.values());
     }
 
+    /**
+     * Função que procura a palete disponível mais próxima.
+     * @return      Prateleira Selecionada
+     */
     private Prateleira getPrateleiraDisponivel() {  // TODO: esta uma merda
         final Prateleira[] prateleira = {null};
         this.prateleirasLivres
@@ -120,6 +153,10 @@ public class ArmazemFacade implements IArmazemFacade{
         return prateleira[0];
     }
 
+    /**
+     * Função que procura o robot disponível mais próximo
+     * @return      Robot selecionado
+     */
     private Robot getMelhorRobotDisponivel() {  // TODO: esta uma merda
         final Robot[] robot = {null};
         this.robots

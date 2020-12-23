@@ -6,6 +6,9 @@ import dss_project_fase3.business.Palete.*;
 import java.sql.*;
 import java.util.*;
 
+/**
+ * Classe PaleteDAO que implementa a interface IPaleteDAO
+ */
 public class PaleteDAO implements IPaleteDAO {
     private static PaleteDAO singleton = null;
 
@@ -18,7 +21,7 @@ public class PaleteDAO implements IPaleteDAO {
                     "LOCALIZACAO varchar (20) DEFAULT NULL," +
                     "CORREDOR int DEFAULT NULL," +
                     "SETOR int DEFAULT NULL," +
-                    "ID_ROBOT int DEFAULT NULL)";  // Assume-se uma relação 1-n entre Turma e Aluno
+                    "ID_ROBOT int DEFAULT NULL)";
             stm.executeUpdate(sql);
         } catch (SQLException e) {
             // Erro a criar tabela...
@@ -30,8 +33,8 @@ public class PaleteDAO implements IPaleteDAO {
 
     /**
      * Implementação do padrão Singleton
-     *
      * @return devolve a instância única desta classe
+     * @throws NullPointerException Em caso de erro
      */
     public static PaleteDAO getInstance() {
         if (PaleteDAO.singleton == null) {
@@ -42,7 +45,8 @@ public class PaleteDAO implements IPaleteDAO {
 
 
     /**
-     * @return número de alunos na base de dados
+     * @return número de paletes na base de dados
+     * @throws NullPointerException Em caso de erro
      */
     @Override
     public int size() {
@@ -63,9 +67,8 @@ public class PaleteDAO implements IPaleteDAO {
     }
 
     /**
-     * Método que verifica se existem alunos
-     *
-     * @return true se existirem 0 alunos
+     * Método que verifica se existem paletes
+     * @return true se existirem 0 paletes
      */
     @Override
     public boolean isEmpty() {
@@ -74,11 +77,10 @@ public class PaleteDAO implements IPaleteDAO {
 
 
     /**
-     * Método que cerifica se um id de turma existe na base de dados
-     *
-     * @param key id da turma
-     * @return true se a turma existe
-     * @throws NullPointerException Em caso de erro - deveriam ser criadas exepções do projecto
+     * Método que verifica se um qr_code de uma palete existe na base de dados
+     * @param key qr_code da Palete
+     * @return true se a Palete existe
+     * @throws NullPointerException Em caso de erro
      */
     @Override
     public boolean containsKey(Object key) {
@@ -99,12 +101,9 @@ public class PaleteDAO implements IPaleteDAO {
 
     /**
      * Verifica se uma Palete existe na base de dados
-     *
-     * Esta implementação é provisória. Devia testar o objecto completo e não apenas a chave.
-     *
-     * @param value ...
-     * @return ...
-     * @throws NullPointerException Em caso de erro - deveriam ser criadas exepções do projecto
+     * @param value     Palete que queremos procurar na Base de Dados
+     * @return          true se a Base de Dados possui a Palete
+     * @throws NullPointerException     Em caso de erro
      */
     @Override
     public boolean containsValue(Object value) {
@@ -114,11 +113,11 @@ public class PaleteDAO implements IPaleteDAO {
 
 
     /**
-     * Obter um aluno, dado o seu número
+     * Obter uma Palete, dado o seu qr_code
      *
-     * @param key número do aluno
-     * @return o aluno caso exista (null noutro caso)
-     * @throws NullPointerException Em caso de erro - deveriam ser criadas exepções do projecto
+     * @param key   qr_code da Palete
+     * @return      Palete caso exista (null noutro caso)
+     * @throws NullPointerException     Em caso de erro
      */
     @Override
     public Palete get(Object key) {
@@ -127,7 +126,6 @@ public class PaleteDAO implements IPaleteDAO {
              Statement stm = conn.createStatement();
              ResultSet rs = stm.executeQuery("SELECT * FROM paletes WHERE QR_CODE='"+key+"'")) {
             if (rs.next()) {  // A chave existe na tabela
-                // Reconstruir o aluno com os dados obtidos da BD - a chave estranjeira da turma, não é utilizada aqui.
                 a = new Palete(rs.getString("QR_CODE"), rs.getString("MATERIAL"), rs.getString("LOCALIZACAO"), rs.getInt("CORREDOR"), rs.getInt("SETOR"), rs.getInt("ID_ROBOT"));
             }
         } catch (SQLException e) {
@@ -140,20 +138,19 @@ public class PaleteDAO implements IPaleteDAO {
 
 
     /**
-     * Insere uma turma na base de dados
-     *
-     * ATENÇÂO: Falta devolver o valor existente (caso exista um)
-     *
-     * @param key o id da turma
-     * @param value a turma
-     * @return para já retorna sempre null (deverá devolver o valor existente, caso exista um)
-     * @throws NullPointerException Em caso de erro - deveriam ser criadas exepções do projecto
+     * Insere uma Palete na base de dados
+     * @param key       qr_code da Palete
+     * @param value     Palete
+     * @return          Palete existente anteriormente na base de dados (null caso não existisse)
+     * @throws NullPointerException     Em caso de erro
      */
     @Override
     public Palete put(String key, Palete value) {
-        Palete res = null;
+        Palete res;
         try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
              Statement stm = conn.createStatement()) {
+
+            res = this.get(key);
 
             switch (value.getLocalizacao().getClass().getSimpleName()) {
                 case "Localizacao_Armazenamento":
@@ -188,13 +185,10 @@ public class PaleteDAO implements IPaleteDAO {
 
 
     /**
-     * Remover uma turma, dado o seu id
-     *
-     * NOTA: Não estamos a apagar a sala...
-     *
-     * @param key id da turma a remover
-     * @return a turma removida
-     * @throws NullPointerException Em caso de erro - deveriam ser criadas exepções do projecto
+     * Remover uma Palete, dado o seu qr_code
+     * @param key   qr_code da Palete a remover
+     * @return      Palete removida
+     * @throws NullPointerException     Em caso de erro
      */
     @Override
     public Palete remove(Object key) {
@@ -212,10 +206,9 @@ public class PaleteDAO implements IPaleteDAO {
 
 
     /**
-     * Adicionar um conjunto de alunos à base de dados
-     *
-     * @param paletesNovas as alunos a adicionar
-     * @throws NullPointerException Em caso de erro - deveriam ser criadas exepções do projecto
+     * Adicionar um conjunto de Paletes à base de dados
+     * @param paletesNovas      as Paletes a adicionar
+     * @throws NullPointerException     Em caso de erro
      */
     @Override
     public void putAll(Map<? extends String, ? extends Palete> paletesNovas) {
@@ -226,10 +219,8 @@ public class PaleteDAO implements IPaleteDAO {
 
 
     /**
-     * Apagar todos os alunos
-     *
-     * @throws NullPointerException ...
-     * @throws NullPointerException Em caso de erro - deveriam ser criadas exepções do projecto
+     * Apagar todos as Paletes
+     * @throws NullPointerException     Em caso de erro
      */
     @Override
     public void clear() {
@@ -245,7 +236,9 @@ public class PaleteDAO implements IPaleteDAO {
 
 
     /**
-     * @return Todos os QR_Code das paletes da base de dados
+     * Função que dá um set com todas as keys
+     * @return  Set com todos os QR_Code das paletes da base de dados
+     * @throws NullPointerException     Em caso de erro
      */
     @Override
     public Set<String> keySet() {
@@ -266,7 +259,9 @@ public class PaleteDAO implements IPaleteDAO {
     }
 
     /**
-     * @return Todos as paletes da base de dados
+     * Função que dá um set com todas os values (Paletes)
+     * @return  Collection com todas as paletes da base de dados
+     * @throws NullPointerException     Em caso de erro
      */
     @Override
     public Collection<Palete> values() {
@@ -288,8 +283,9 @@ public class PaleteDAO implements IPaleteDAO {
 
 
     /**
-     * NÃO IMPLEMENTADO!
-     * @return Set com Entre Sets da base de dados
+     * Função que dá um set com todos os entrySets da base de Dados
+     * @return      Set com todos os entrySets da base de Dados
+     * @throws NullPointerException     Em caso de erro
      */
     @Override
     public Set<Entry<String, Palete>> entrySet() {
@@ -312,6 +308,12 @@ public class PaleteDAO implements IPaleteDAO {
     }
 
 
+    /**
+     * Função que atualiza localizacao de uma dada palete, dado um qr_code
+     * @param localizacao       localizacao da Palete
+     * @param qr_code           qr_code da Palete
+     * @throws NullPointerException     Em caso de erro
+     */
     public void atualizaLocalizacao(Localizacao localizacao, String qr_code) {
         try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
              Statement stm = conn.createStatement()) {

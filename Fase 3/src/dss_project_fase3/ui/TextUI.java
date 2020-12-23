@@ -71,6 +71,10 @@ public class TextUI {
     }
 
     // Métodos auxiliares
+
+    /**
+     * Opção responsavel por comunicar um Código QR
+     */
     private void trataComunicarCodigoQR() {
         try {
             System.out.print("Código QR da palete: ");
@@ -88,6 +92,9 @@ public class TextUI {
         }
     }
 
+    /**
+     * Opção responsável por comunicar ordem de transporte
+     */
     private void trataComunicarOrdemTransporte() {
         try {
             this.model.comunicar_ordem_transporte();
@@ -100,6 +107,9 @@ public class TextUI {
         }
     }
 
+    /**
+     * Opção responsável por notificar recolha de Palete
+     */
     private void trataNotificarRecolhaPalete() {
         try {
             System.out.print("ID Robot: ");
@@ -118,6 +128,9 @@ public class TextUI {
         }
     }
 
+    /**
+     * Opção responsável por notificar entrega da Palete
+     */
     private void trataNotificarEntregaPalete() {
         try {
             System.out.print("ID Robot: ");
@@ -136,6 +149,9 @@ public class TextUI {
         }
     }
 
+    /**
+     * Opção responsável por consultar todas as localizações de todas as paletes
+     */
     private void trataConsultarListagemLocalizacoes() {
         List<Palete> paletes = this.model.consultar_listagem_localizacoes();
 
