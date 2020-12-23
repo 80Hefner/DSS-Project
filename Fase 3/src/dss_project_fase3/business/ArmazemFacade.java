@@ -5,10 +5,7 @@ import dss_project_fase3.business.Localizacao.Localizacao_Armazenamento;
 import dss_project_fase3.business.Localizacao.Localizacao_Robot;
 import dss_project_fase3.business.Localizacao.Localizacao_Transporte;
 import dss_project_fase3.business.Palete.*;
-import dss_project_fase3.data.IPaleteDAO;
-import dss_project_fase3.data.IPrateleiraDAO;
-import dss_project_fase3.data.PaleteDAO;
-import dss_project_fase3.data.PrateleiraDAO;
+import dss_project_fase3.data.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -18,14 +15,14 @@ public class ArmazemFacade implements IArmazemFacade{
     private Set<Prateleira> prateleirasLivres;
     private IPaleteDAO paletes;
     private List<String> paletes_para_transporte;
-    private Map<Integer, Robot> robots;
+    private IRobotDAO robots;
 
     public ArmazemFacade(int nrCorredores, int nrSetores) {
         this.prateleiras = PrateleiraDAO.getInstance();
         this.prateleirasLivres = new TreeSet<>();
         this.paletes = PaleteDAO.getInstance();
         this.paletes_para_transporte = new ArrayList<>();
-        this.robots = new HashMap<>();
+        this.robots = RobotDAO.getInstance();
 
         for (int i = 0; i < nrCorredores; i++) {
             for (int j = 0; i < nrSetores; i++) {
@@ -45,8 +42,6 @@ public class ArmazemFacade implements IArmazemFacade{
                 .filter(p -> p.getQr_code() == null)
                 .forEach(p -> this.prateleirasLivres.add(p));
 
-        this.robots.put(1, new Robot(1));
-        this.robots.put(2, new Robot(2));
     }
 
 
@@ -71,7 +66,7 @@ public class ArmazemFacade implements IArmazemFacade{
         Entrega e = new Entrega(pal.getQr_code().getCodigo(), pal.getLocalizacao(), prat.getLocalizacao());
 
         Robot r = getMelhorRobotDisponivel();
-        r.pegarEntrega(e);
+        this.robots.recolhePalete(r.getId_robot(), e);
     }
 
     @Override
@@ -86,7 +81,7 @@ public class ArmazemFacade implements IArmazemFacade{
         this.paletes.atualizaLocalizacao(this.robots.get(id_robot).getEntregaAtual().getDestino(), qr_code.getCodigo());
         this.prateleiras.inserePalete((Localizacao_Armazenamento) this.robots.get(id_robot).getEntregaAtual().getDestino(), qr_code.getCodigo());
 
-        this.robots.get(id_robot).pousarEntrega();
+        this.robots.entregaRealizada(id_robot);
 
         //System.out.println(this.robot.toString("\t"));
     }

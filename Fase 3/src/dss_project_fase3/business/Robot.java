@@ -23,6 +23,12 @@ public class Robot {
         this.entregaAtual = r.getEntregaAtual();
     }
 
+    public Robot(int id_robot, boolean disponivilidade, String qr_code, String localizacao_origem, int corredor_origem, int setor_origem, String localizacao_destino, int corredor_destino, int setor_destino) {
+        this.id_robot = id_robot;
+        this.disponivel = disponivilidade;
+        this.entregaAtual = new Entrega(qr_code, localizacao_origem, corredor_origem, setor_origem, localizacao_destino, corredor_destino, setor_destino);
+    }
+
     public int getId_robot() {
         return id_robot;
     }

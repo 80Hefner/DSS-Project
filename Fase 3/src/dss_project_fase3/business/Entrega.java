@@ -1,6 +1,7 @@
 package dss_project_fase3.business;
 
-import dss_project_fase3.business.Localizacao.Localizacao;
+import dss_project_fase3.business.Localizacao.*;
+import static dss_project_fase3.business.Enums.ZonaArmazem.*;
 
 public class Entrega {
     private String qr_code;
@@ -17,6 +18,32 @@ public class Entrega {
         this.qr_code = e.getQr_code();
         this.origem = e.getOrigem();
         this.destino = e.getDestino();
+    }
+
+    public Entrega (String qr_code, String localizacao_origem, int corredor_origem, int setor_origem, String localizacao_destino, int corredor_destino, int setor_destino) {
+        this.qr_code = qr_code;
+        switch (localizacao_origem){
+            case "ZONA_RECECAO":
+                this.origem = new Localizacao_Transporte(ZONA_RECECAO);
+                break;
+            case "ZONA_ENTREGA":
+                this.origem = new Localizacao_Transporte(ZONA_ENTREGA);
+                break;
+            case "ZONA_ARMAZENAMENTO":
+                this.origem = new Localizacao_Armazenamento(corredor_origem,setor_origem);
+                break;
+        }
+        switch (localizacao_destino){
+            case "ZONA_RECECAO":
+                this.destino = new Localizacao_Transporte(ZONA_RECECAO);
+                break;
+            case "ZONA_ENTREGA":
+                this.destino = new Localizacao_Transporte(ZONA_ENTREGA);
+                break;
+            case "ZONA_ARMAZENAMENTO":
+                this.destino = new Localizacao_Armazenamento(corredor_destino,setor_destino);
+                break;
+        }
     }
 
     public String getQr_code() {
