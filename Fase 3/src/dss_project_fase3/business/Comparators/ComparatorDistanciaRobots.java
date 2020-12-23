@@ -6,14 +6,14 @@ import dss_project_fase3.business.Robot.Robot;
 
 import java.util.Comparator;
 /**
- * Classe com Comparator de Pares String Integer
+ * Classe com Comparator de Distancia de Robots em relação á zona receção
  */
 public class ComparatorDistanciaRobots implements Comparator<Robot> {
 
     /**
-     * @brief              Função que compara dois Pares de String Integer.
-     * @param r1           ParStringInteger
-     * @param r2           ParStringInteger
+     * @brief              Função que compara dois Robots e as suas distancias à Zona Receção
+     * @param r1           Robot
+     * @param r2           Robot
      * @return             Inteiro que vai servir de comparação, como nas funções gerais de compare
      */
     @Override
