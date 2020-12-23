@@ -9,7 +9,7 @@ import java.util.Scanner;
  * Esta classe implementa um menu em modo texto.
  */
 public class Menu {
-    private static Scanner sc = new Scanner(System.in);
+    private static Scanner sc;
     private List<String> opcoes;
     private int op;
 
@@ -52,16 +52,18 @@ public class Menu {
 
         System.out.print("Opção: ");
         try {
+            sc = new Scanner(System.in);
             op = sc.nextInt();
+            if (op<0 || op>this.opcoes.size()) {
+                System.out.println("Opção Inválida!!!");
+                op = -1;
+            }
         }
         catch (InputMismatchException e) { // Não foi inserido um int
             op = -1;
             System.out.println(e.toString());
         }
-        if (op<0 || op>this.opcoes.size()) {
-            System.out.println("Opção Inválida!!!");
-            op = -1;
-        }
+
         return op;
     }
 
