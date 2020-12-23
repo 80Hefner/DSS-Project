@@ -2,9 +2,6 @@ package dss_project_fase3.data;
 
 
 import dss_project_fase3.business.Localizacao.Localizacao_Armazenamento;
-import dss_project_fase3.business.Palete.Material;
-import dss_project_fase3.business.Palete.Palete;
-import dss_project_fase3.business.Palete.QR_Code;
 import dss_project_fase3.business.Prateleira;
 
 import java.sql.*;
@@ -84,35 +81,23 @@ public class PrateleiraDAO implements IPrateleiraDAO {
 
     @Override
     public Iterator<Prateleira> iterator() {
-        Collection<Prateleira> col = new TreeSet<>();
-        try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
-             Statement stm = conn.createStatement();
-             ResultSet rs =
-                     stm.executeQuery("SELECT * FROM prateleiras" )) {
-            while (rs.next()) {
-                int corredor = rs.getInt("CORREDOR");
-                int setor = rs.getInt("SETOR");
-                String qr_code = rs.getString("PALETE");
+        Set<Prateleira> col = getPrateleirasDB();
 
-                Prateleira prateleira = new Prateleira(new Localizacao_Armazenamento(corredor, setor), qr_code);
-                col.add(prateleira);
-            }
-        } catch (SQLException e) {
-            // Database error!
-            e.printStackTrace();
-            throw new NullPointerException(e.getMessage());
-        }
         return col.iterator();
     }
 
     @Override
     public Object[] toArray() {
-        return new Object[0];
+        Set<Prateleira> col = getPrateleirasDB();
+
+        return col.toArray();
     }
 
     @Override
     public <T> T[] toArray(T[] a) {
-        return null;
+        Set<Prateleira> col = getPrateleirasDB();
+
+        return (T[]) col.toArray(a);
     }
 
     @Override
@@ -150,22 +135,30 @@ public class PrateleiraDAO implements IPrateleiraDAO {
 
     @Override
     public boolean containsAll(Collection<?> c) {
-        return false;
+        Set<Prateleira> col = getPrateleirasDB();
+
+        return col.containsAll(c);
     }
 
     @Override
     public boolean addAll(Collection<? extends Prateleira> c) {
-        return false;
+        Set<Prateleira> col = getPrateleirasDB();
+
+        return col.addAll(c);
     }
 
     @Override
     public boolean retainAll(Collection<?> c) {
-        return false;
+        Set<Prateleira> col = getPrateleirasDB();
+
+        return col.retainAll(c);
     }
 
     @Override
     public boolean removeAll(Collection<?> c) {
-        return false;
+        Set<Prateleira> col = getPrateleirasDB();
+
+        return col.removeAll(c);
     }
 
     @Override
@@ -206,5 +199,27 @@ public class PrateleiraDAO implements IPrateleiraDAO {
             e.printStackTrace();
             throw new NullPointerException(e.getMessage());
         }
+    }
+
+    private Set<Prateleira> getPrateleirasDB() {
+        Set<Prateleira> col = new TreeSet<>();
+        try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
+             Statement stm = conn.createStatement();
+             ResultSet rs =
+                     stm.executeQuery("SELECT * FROM prateleiras" )) {
+            while (rs.next()) {
+                int corredor = rs.getInt("CORREDOR");
+                int setor = rs.getInt("SETOR");
+                String qr_code = rs.getString("PALETE");
+
+                Prateleira prateleira = new Prateleira(new Localizacao_Armazenamento(corredor, setor), qr_code);
+                col.add(prateleira);
+            }
+        } catch (SQLException e) {
+            // Database error!
+            e.printStackTrace();
+            throw new NullPointerException(e.getMessage());
+        }
+        return col;
     }
 }
