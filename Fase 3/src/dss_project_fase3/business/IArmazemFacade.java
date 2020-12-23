@@ -1,9 +1,9 @@
 package dss_project_fase3.business;
 
-import dss_project_fase3.business.Exceptions.EmptyTransportQueueException;
-import dss_project_fase3.business.Exceptions.InvalidRequestFromRobot;
-import dss_project_fase3.business.Exceptions.InvalidRobotIDException;
-import dss_project_fase3.business.Exceptions.InvalidTransportOrderException;
+import dss_project_fase3.utils.Exceptions.EmptyTransportQueueException;
+import dss_project_fase3.utils.Exceptions.InvalidRequestFromRobot;
+import dss_project_fase3.utils.Exceptions.InvalidRobotIDException;
+import dss_project_fase3.utils.Exceptions.InvalidTransportOrderException;
 import dss_project_fase3.business.Palete.Palete;
 import dss_project_fase3.business.Palete.QR_Code;
 

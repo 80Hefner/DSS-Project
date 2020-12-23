@@ -1,7 +1,7 @@
 package dss_project_fase3.business.Palete;
 
 import dss_project_fase3.business.Localizacao.*;
-import static dss_project_fase3.business.Enums.ZonaArmazem.*;
+import static dss_project_fase3.utils.Enums.ZonaArmazem.*;
 
 /**
  * Classe Palete

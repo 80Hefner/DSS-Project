@@ -1,6 +1,6 @@
 package dss_project_fase3.business.Localizacao;
 
-import dss_project_fase3.business.Enums.ZonaArmazem;
+import dss_project_fase3.utils.Enums.ZonaArmazem;
 
 /**
  * Classe Localizacao_Armazenamento que estende a classe abestrata Localizacao

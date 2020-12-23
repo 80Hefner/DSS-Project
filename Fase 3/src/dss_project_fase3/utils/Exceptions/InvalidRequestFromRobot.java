@@ -1,9 +1,9 @@
-package dss_project_fase3.business.Exceptions;
+package dss_project_fase3.utils.Exceptions;
 
-import dss_project_fase3.business.Enums.RobotRequest;
+import dss_project_fase3.utils.Enums.RobotRequest;
 
 /**
- * Classe com Uma Excepetion de request inválido
+ * Classe com Uma Exception de request inválido
  */
 public class InvalidRequestFromRobot extends Exception {
 

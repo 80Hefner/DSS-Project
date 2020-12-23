@@ -1,12 +1,12 @@
-package dss_project_fase3.business.Exceptions;
+package dss_project_fase3.utils.Exceptions;
 
 /**
- * Classe com Uma Excepetion de Código QR Inválivo
+ * Classe com Uma Exception de Código QR Inválido
  */
 public class InvalidQRCodeException extends Exception {
 
     /**
-     * Função que emite a Exception de Código QR Inválivo
+     * Função que emite a Exception de Código QR Inválido
      */
     public InvalidQRCodeException() {
         super("Código QR inválido!");

@@ -1,7 +1,7 @@
-package dss_project_fase3.business.Exceptions;
+package dss_project_fase3.utils.Exceptions;
 
 /**
- * Classe com Uma Excepetion de Não haver paletes para transportar
+ * Classe com Uma Exception de Não haver paletes para transportar
  */
 public class EmptyTransportQueueException extends Exception {
 

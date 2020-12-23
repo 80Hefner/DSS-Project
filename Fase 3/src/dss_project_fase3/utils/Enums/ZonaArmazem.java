@@ -1,4 +1,4 @@
-package dss_project_fase3.business.Enums;
+package dss_project_fase3.utils.Enums;
 
 /**
  * Classe com Um ENUM relativo ao tipo de zona (da Localização) onde um objeto se pode encontrar

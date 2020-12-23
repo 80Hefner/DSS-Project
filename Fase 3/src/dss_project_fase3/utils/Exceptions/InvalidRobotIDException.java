@@ -1,7 +1,7 @@
-package dss_project_fase3.business.Exceptions;
+package dss_project_fase3.utils.Exceptions;
 
 /**
- * Classe com Uma Excepetion de ID de Robot Inválido
+ * Classe com Uma Exception de ID de Robot Inválido
  */
 public class InvalidRobotIDException extends Exception {
 

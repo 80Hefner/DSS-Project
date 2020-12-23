@@ -1,6 +1,6 @@
 package dss_project_fase3.business.Palete;
 
-import dss_project_fase3.business.Exceptions.InvalidQRCodeException;
+import dss_project_fase3.utils.Exceptions.InvalidQRCodeException;
 
 /**
  * Classe QR_Code

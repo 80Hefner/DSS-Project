@@ -4,7 +4,7 @@ import dss_project_fase3.business.Localizacao.Localizacao;
 import dss_project_fase3.business.Localizacao.Localizacao_Armazenamento;
 import dss_project_fase3.business.Localizacao.Localizacao_Transporte;
 
-import static dss_project_fase3.business.Enums.ZonaArmazem.*;
+import static dss_project_fase3.utils.Enums.ZonaArmazem.*;
 
 /**
  * Classe Robot

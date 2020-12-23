@@ -1,10 +1,10 @@
 package dss_project_fase3.ui;
 
 import dss_project_fase3.business.ArmazemFacade;
-import dss_project_fase3.business.Exceptions.*;
 import dss_project_fase3.business.IArmazemFacade;
 import dss_project_fase3.business.Palete.Palete;
 import dss_project_fase3.business.Palete.QR_Code;
+import dss_project_fase3.utils.Exceptions.*;
 
 import java.util.List;
 import java.util.Scanner;
@@ -101,7 +101,8 @@ public class TextUI {
         }
         catch (EmptyTransportQueueException et) {
             System.out.println(et.getMessage());
-        } catch (InvalidTransportOrderException el) {
+        }
+        catch (InvalidTransportOrderException el) {
             System.out.println(el.getMessage());
         }
     }
