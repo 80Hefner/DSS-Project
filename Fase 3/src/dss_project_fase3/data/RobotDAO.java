@@ -1,11 +1,9 @@
 package dss_project_fase3.data;
 
-import dss_project_fase3.business.Entrega;
+import dss_project_fase3.business.Robot.Entrega;
 import dss_project_fase3.business.Localizacao.Localizacao_Armazenamento;
-import dss_project_fase3.business.Localizacao.Localizacao_Robot;
 import dss_project_fase3.business.Localizacao.Localizacao_Transporte;
-import dss_project_fase3.business.Palete.Palete;
-import dss_project_fase3.business.Robot;
+import dss_project_fase3.business.Robot.Robot;
 
 import java.sql.*;
 import java.util.*;
@@ -97,12 +95,23 @@ public class RobotDAO implements IRobotDAO{
     @Override
     public Robot get(Object key) {
         Robot a = null;
+        Integer id_robot = (Integer) key;
         try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
              Statement stm = conn.createStatement();
-             ResultSet rs = stm.executeQuery("SELECT * FROM robots WHERE ID_ROBOT="+key)) {
+             ResultSet rs = stm.executeQuery("SELECT * FROM robots WHERE ID_ROBOT="+id_robot)) {
             if (rs.next()) {  // A chave existe na tabela
-                // Reconstruir o aluno com os dados obtidos da BD - a chave estranjeira da turma, não é utilizada aqui.
-                a = new Robot(rs.getInt("ID_ROBOT"), rs.getBoolean("DISPONIVEL"), rs.getString("QR_CODE"), rs.getString("LOCALIZACAO_ORIGEM"), rs.getInt("CORREDOR_ORIGEM"), rs.getInt("SETOR_ORIGEM"), rs.getString("LOCALIZACAO_DESTINO"), rs.getInt("CORREDOR_DESTINO"), rs.getInt("SETOR_DESTINO"));
+                Integer inteiroID = rs.getInt("ID_ROBOT");
+                Boolean disponivel = rs.getBoolean("DISPONIVEL");
+                String qr_code = rs.getString("QR_CODE");
+                String origem = rs.getString("LOCALIZACAO_ORIGEM");
+                int corredor_origem = rs.getInt("CORREDOR_ORIGEM");
+                int setor_origem = rs.getInt("SETOR_ORIGEM");
+                String destino = rs.getString("LOCALIZACAO_DESTINO");
+                int corredor_destino = rs.getInt("CORREDOR_DESTINO");
+                int setor_destino = rs.getInt("SETOR_DESTINO");
+
+                if (disponivel == true) a = new Robot(id_robot);
+                else a = new Robot(rs.getInt("ID_ROBOT"), rs.getBoolean("DISPONIVEL"), rs.getString("QR_CODE"), rs.getString("LOCALIZACAO_ORIGEM"), rs.getInt("CORREDOR_ORIGEM"), rs.getInt("SETOR_ORIGEM"), rs.getString("LOCALIZACAO_DESTINO"), rs.getInt("CORREDOR_DESTINO"), rs.getInt("SETOR_DESTINO"));
             }
         } catch (SQLException e) {
             // Database error!
@@ -242,7 +251,7 @@ public class RobotDAO implements IRobotDAO{
              Statement stm = conn.createStatement()) {
 
             stm.executeUpdate(
-                    "UPDATE robots SET DISPONIBILIDADE=TRUE, QR_CODE=NULL, LOCALIZACAO_ORIGEM=NULL, CORREDOR_ORIGEM=NULL, SETOR_ORIGEM=NULL, LOCALIZACAO_DESTINO=NULL, CORREDOR_DESTINO=NULL, SETOR_DESTINO=NULL WHERE ID_ROBOT="+id_robot);
+                    "UPDATE robots SET DISPONIVEL=TRUE, QR_CODE=NULL, LOCALIZACAO_ORIGEM=NULL, CORREDOR_ORIGEM=NULL, SETOR_ORIGEM=NULL, LOCALIZACAO_DESTINO=NULL, CORREDOR_DESTINO=NULL, SETOR_DESTINO=NULL WHERE ID_ROBOT="+id_robot);
 
         } catch (SQLException e) {
             // Database error!
@@ -263,14 +272,14 @@ public class RobotDAO implements IRobotDAO{
                     Localizacao_Transporte transporteOrigem = (Localizacao_Transporte) entrega.getOrigem();
                     Localizacao_Armazenamento armazenamentoDestino = (Localizacao_Armazenamento) entrega.getDestino();
                     stm.executeUpdate(
-                            "UPDATE robots SET DISPONIBILIDADE=FALSE, QR_CODE='"+entrega.getQr_code()+"', LOCALIZACAO_ORIGEM='"+transporteOrigem.getZona().toString()+"', CORREDOR_ORIGEM=NULL, SETOR_ORIGEM=NULL, LOCALIZACAO_DESTINO='"+armazenamentoDestino.getZona().toString()+"', CORREDOR_DESTINO="+armazenamentoDestino.getCorredor()+", SETOR_DESTINO="+armazenamentoDestino.getSetor()+" WHERE ID_ROBOT="+id_robot);
+                            "UPDATE robots SET DISPONIVEL=FALSE, QR_CODE='"+entrega.getQr_code()+"', LOCALIZACAO_ORIGEM='"+transporteOrigem.getZona().toString()+"', CORREDOR_ORIGEM=NULL, SETOR_ORIGEM=NULL, LOCALIZACAO_DESTINO='"+armazenamentoDestino.getZona().toString()+"', CORREDOR_DESTINO="+armazenamentoDestino.getCorredor()+", SETOR_DESTINO="+armazenamentoDestino.getSetor()+" WHERE ID_ROBOT="+id_robot);
                     break;
 
                 case "Localizacao_Armazenamento":
                     Localizacao_Armazenamento armazenamentoOrigem = (Localizacao_Armazenamento) entrega.getOrigem();
                     Localizacao_Transporte transporteDestino = (Localizacao_Transporte) entrega.getDestino();
                     stm.executeUpdate(
-                            "UPDATE robots SET DISPONIBILIDADE=FALSE, QR_CODE='"+entrega.getQr_code()+"', LOCALIZACAO_ORIGEM='"+armazenamentoOrigem.getZona().toString()+"', CORREDOR_ORIGEM="+armazenamentoOrigem.getCorredor()+", SETOR_ORIGEM="+armazenamentoOrigem.getSetor()+", LOCALIZACAO_DESTINO='"+transporteDestino.getZona().toString()+"', CORREDOR_DESTINO=NULL, SETOR_DESTINO=NULL WHERE ID_ROBOT="+id_robot);
+                            "UPDATE robots SET DISPONIVEL=FALSE, QR_CODE='"+entrega.getQr_code()+"', LOCALIZACAO_ORIGEM='"+armazenamentoOrigem.getZona().toString()+"', CORREDOR_ORIGEM="+armazenamentoOrigem.getCorredor()+", SETOR_ORIGEM="+armazenamentoOrigem.getSetor()+", LOCALIZACAO_DESTINO='"+transporteDestino.getZona().toString()+"', CORREDOR_DESTINO=NULL, SETOR_DESTINO=NULL WHERE ID_ROBOT="+id_robot);
                     break;
 
             }

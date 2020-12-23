@@ -1,10 +1,17 @@
 package dss_project_fase3.business;
 
+import dss_project_fase3.business.Enums.RobotRequest;
 import dss_project_fase3.business.Enums.ZonaArmazem;
+import dss_project_fase3.business.Exceptions.EmptyTransportQueueException;
+import dss_project_fase3.business.Exceptions.InvalidRequestFromRobot;
+import dss_project_fase3.business.Exceptions.InvalidRobotIDException;
 import dss_project_fase3.business.Localizacao.Localizacao_Armazenamento;
 import dss_project_fase3.business.Localizacao.Localizacao_Robot;
 import dss_project_fase3.business.Localizacao.Localizacao_Transporte;
 import dss_project_fase3.business.Palete.*;
+import dss_project_fase3.business.Prateleira.Prateleira;
+import dss_project_fase3.business.Robot.Entrega;
+import dss_project_fase3.business.Robot.Robot;
 import dss_project_fase3.data.*;
 
 import java.util.*;
@@ -23,13 +30,6 @@ public class ArmazemFacade implements IArmazemFacade{
         this.paletes = PaleteDAO.getInstance();
         this.paletes_para_transporte = new ArrayList<>();
         this.robots = RobotDAO.getInstance();
-
-        for (int i = 0; i < nrCorredores; i++) {
-            for (int j = 0; i < nrSetores; i++) {
-                Prateleira p = new Prateleira(new Localizacao_Armazenamento(i,j));
-                this.prateleirasLivres.add(p);
-            }
-        }
 
         this.paletes
                 .values()
@@ -54,8 +54,8 @@ public class ArmazemFacade implements IArmazemFacade{
     }
 
     @Override
-    public void comunicar_ordem_transporte() {
-        if (this.paletes_para_transporte.isEmpty()) return;
+    public void comunicar_ordem_transporte() throws EmptyTransportQueueException {
+        if (this.paletes_para_transporte.isEmpty()) throw new EmptyTransportQueueException();
 
         String qr_code = this.paletes_para_transporte.remove(0);
         Palete pal = this.paletes.get(qr_code);
@@ -70,29 +70,43 @@ public class ArmazemFacade implements IArmazemFacade{
     }
 
     @Override
-    public void notificar_recolha_palete(QR_Code qr_code, int id_robot) {
-        this.paletes.atualizaLocalizacao(new Localizacao_Robot(id_robot), qr_code.getCodigo());
+    public void notificar_recolha_palete(int id_robot) throws InvalidRobotIDException, InvalidRequestFromRobot {
+        Robot robot = this.robots.get(id_robot);
 
-        //System.out.println(this.robot.toString("\t"));
+        if (robot == null) throw new InvalidRobotIDException();
+
+        Entrega entrega = robot.getEntregaAtual();
+
+        if (entrega == null || this.paletes.get(entrega.getQr_code()).getLocalizacao().getZona().equals(ZonaArmazem.ROBOT)) throw new InvalidRequestFromRobot(RobotRequest.RECOLHA);
+
+        String qr_code = entrega.getQr_code();
+
+
+        this.paletes.atualizaLocalizacao(new Localizacao_Robot(id_robot), qr_code);
     }
 
     @Override
-    public void notificar_entrega_palete(QR_Code qr_code, int id_robot) {
-        this.paletes.atualizaLocalizacao(this.robots.get(id_robot).getEntregaAtual().getDestino(), qr_code.getCodigo());
-        this.prateleiras.inserePalete((Localizacao_Armazenamento) this.robots.get(id_robot).getEntregaAtual().getDestino(), qr_code.getCodigo());
+    public void notificar_entrega_palete(int id_robot) throws InvalidRobotIDException, InvalidRequestFromRobot {
+        Robot robot = this.robots.get(id_robot);
+
+        if (robot == null) throw new InvalidRobotIDException();
+
+        Entrega entrega = robot.getEntregaAtual();
+
+        if (entrega == null || !this.paletes.get(entrega.getQr_code()).getLocalizacao().getZona().equals(ZonaArmazem.ROBOT)) throw new InvalidRequestFromRobot(RobotRequest.ENTREGA);
+
+        String qr_code = entrega.getQr_code();
+
+
+        this.paletes.atualizaLocalizacao(this.robots.get(id_robot).getEntregaAtual().getDestino(), qr_code);
+        this.prateleiras.inserePalete((Localizacao_Armazenamento) this.robots.get(id_robot).getEntregaAtual().getDestino(), qr_code);
 
         this.robots.entregaRealizada(id_robot);
-
-        //System.out.println(this.robot.toString("\t"));
     }
 
     @Override
     public List<Palete> consultar_listagem_localizacoes() {
-        return this.paletes
-                .values()
-                .stream()
-                .map(Palete::clone)
-                .collect(Collectors.toList());
+        return new ArrayList<>(this.paletes.values());
     }
 
     private Prateleira getPrateleiraDisponivel() {  // TODO: esta uma merda

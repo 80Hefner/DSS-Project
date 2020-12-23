@@ -1,8 +1,10 @@
 package dss_project_fase3.ui;
 
 import dss_project_fase3.business.ArmazemFacade;
-import dss_project_fase3.business.Enums.ZonaArmazem;
+import dss_project_fase3.business.Exceptions.EmptyTransportQueueException;
+import dss_project_fase3.business.Exceptions.InvalidRequestFromRobot;
 import dss_project_fase3.business.Exceptions.InvalidQRCodeException;
+import dss_project_fase3.business.Exceptions.InvalidRobotIDException;
 import dss_project_fase3.business.IArmazemFacade;
 import dss_project_fase3.business.Palete.Palete;
 import dss_project_fase3.business.Palete.QR_Code;
@@ -87,40 +89,50 @@ public class TextUI {
     }
 
     private void trataComunicarOrdemTransporte() {
-        this.model.comunicar_ordem_transporte();
-    }
-
-    private void trataNotificarRecolhaPalete() {
         try {
-            System.out.print("Código QR da palete: ");
-            String qr_code_str = sc.nextLine();
-            QR_Code qr_code = new QR_Code(qr_code_str);
-            qr_code.isValid();
-
-            this.model.notificar_recolha_palete(new QR_Code(qr_code), 1); // TODO: verificar id_robot
+            this.model.comunicar_ordem_transporte();
         }
         catch (NullPointerException en) {
             System.out.println(en.getMessage());
         }
-        catch (InvalidQRCodeException ei) {
-            System.out.println(ei.getMessage());
+        catch (EmptyTransportQueueException et) {
+            System.out.println(et.getMessage());
+        }
+    }
+
+    private void trataNotificarRecolhaPalete() {
+        try {
+            System.out.print("ID Robot: ");
+            int id_robot = sc.nextInt();
+
+            this.model.notificar_recolha_palete(id_robot);
+        }
+        catch (NullPointerException en) {
+            System.out.println(en.getMessage());
+        }
+        catch (InvalidRobotIDException eid) {
+            System.out.println(eid.getMessage());
+        }
+        catch (InvalidRequestFromRobot eir) {
+            System.out.println(eir.getMessage());
         }
     }
 
     private void trataNotificarEntregaPalete() {
         try {
-            System.out.print("Código QR da palete: ");
-            String qr_code_str = sc.nextLine();
-            QR_Code qr_code = new QR_Code(qr_code_str);
-            qr_code.isValid();
+            System.out.print("ID Robot: ");
+            int id_robot = sc.nextInt();
 
-            this.model.notificar_entrega_palete(new QR_Code(qr_code), 1); // TODO: verificar id_robot
+            this.model.notificar_entrega_palete(id_robot);
         }
         catch (NullPointerException en) {
             System.out.println(en.getMessage());
         }
-        catch (InvalidQRCodeException ei) {
-            System.out.println(ei.getMessage());
+        catch (InvalidRobotIDException eid) {
+            System.out.println(eid.getMessage());
+        }
+        catch (InvalidRequestFromRobot eir) {
+            System.out.println(eir.getMessage());
         }
     }
 
@@ -128,8 +140,7 @@ public class TextUI {
         List<Palete> paletes = this.model.consultar_listagem_localizacoes();
 
         System.out.println("Paletes no armazém:");
-        for (int i = 0; i < paletes.size(); i++) {
-            Palete p = paletes.get(i);
+        for (Palete p : paletes) {
             System.out.println(p.toString("\t"));
         }
     }

@@ -1,4 +1,4 @@
-package dss_project_fase3.business;
+package dss_project_fase3.business.Robot;
 
 public class Robot {
     private final int id_robot;
@@ -42,7 +42,8 @@ public class Robot {
     }
 
     public Entrega getEntregaAtual() {
-        return entregaAtual.clone();
+        if (this.entregaAtual != null) return entregaAtual.clone();
+        else return null;
     }
 
     public void setEntregaAtual(Entrega entregaAtual) {

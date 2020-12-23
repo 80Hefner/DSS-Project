@@ -1,7 +1,7 @@
 package dss_project_fase3.data;
 
-import dss_project_fase3.business.Entrega;
-import dss_project_fase3.business.Robot;
+import dss_project_fase3.business.Robot.Entrega;
+import dss_project_fase3.business.Robot.Robot;
 
 import java.util.Map;
 

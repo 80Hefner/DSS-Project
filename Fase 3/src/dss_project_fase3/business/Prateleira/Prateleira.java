@@ -1,4 +1,4 @@
-package dss_project_fase3.business;
+package dss_project_fase3.business.Prateleira;
 
 import dss_project_fase3.business.Localizacao.Localizacao_Armazenamento;
 import dss_project_fase3.business.Palete.Palete;
