@@ -1,12 +1,13 @@
 package dss_project_fase3.business;
 
-import dss_project_fase3.business.Comparators.ComparatorDistanciaRobots;
-import dss_project_fase3.business.Enums.RobotRequest;
-import dss_project_fase3.business.Enums.ZonaArmazem;
-import dss_project_fase3.business.Exceptions.EmptyTransportQueueException;
-import dss_project_fase3.business.Exceptions.InvalidRequestFromRobot;
-import dss_project_fase3.business.Exceptions.InvalidRobotIDException;
-import dss_project_fase3.business.Exceptions.InvalidTransportOrderException;
+import dss_project_fase3.business.Localizacao.Localizacao;
+import dss_project_fase3.utils.Enums.RobotRequest;
+import dss_project_fase3.utils.Enums.TransportOrderError;
+import dss_project_fase3.utils.Enums.ZonaArmazem;
+import dss_project_fase3.utils.Exceptions.EmptyTransportQueueException;
+import dss_project_fase3.utils.Exceptions.InvalidRequestFromRobot;
+import dss_project_fase3.utils.Exceptions.InvalidRobotIDException;
+import dss_project_fase3.utils.Exceptions.InvalidTransportOrderException;
 import dss_project_fase3.business.Localizacao.Localizacao_Armazenamento;
 import dss_project_fase3.business.Localizacao.Localizacao_Robot;
 import dss_project_fase3.business.Localizacao.Localizacao_Transporte;
@@ -17,6 +18,7 @@ import dss_project_fase3.business.Robot.Robot;
 import dss_project_fase3.data.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ArmazemFacade implements IArmazemFacade{
     private IPrateleiraDAO prateleiras;
@@ -24,6 +26,7 @@ public class ArmazemFacade implements IArmazemFacade{
     private IPaleteDAO paletes;
     private List<String> paletes_para_transporte;
     private IRobotDAO robots;
+    private GrafoArmazem grafo_armazem;
 
     /**
      * Construtor parametrizado do ArmazemFacade
@@ -36,6 +39,7 @@ public class ArmazemFacade implements IArmazemFacade{
         this.paletes = PaleteDAO.getInstance();
         this.paletes_para_transporte = new ArrayList<>();
         this.robots = RobotDAO.getInstance();
+        this.grafo_armazem = new GrafoArmazem();
 
         this.paletes
                 .values()
@@ -75,13 +79,13 @@ public class ArmazemFacade implements IArmazemFacade{
         String qr_code = this.paletes_para_transporte.get(0);
         Palete pal = this.paletes.get(qr_code);
 
-        if (this.prateleirasLivres.isEmpty()) throw new InvalidTransportOrderException(0);
+        if (this.prateleirasLivres.isEmpty()) throw new InvalidTransportOrderException(TransportOrderError.ARMAZEM_CHEIO);
 
         Prateleira prat = getPrateleiraDisponivel();
         Entrega e = new Entrega(pal.getQr_code().getCodigo(), pal.getLocalizacao(), prat.getLocalizacao());
-        Robot r = getMelhorRobotDisponivel();
 
-        if (r==null) throw new InvalidTransportOrderException(1);
+        Robot r = this.robots.get(getMelhorRobotDisponivel(pal.getLocalizacao()));
+
 
         this.paletes_para_transporte.remove(0);
         this.prateleirasLivres.remove(prat);
@@ -161,18 +165,13 @@ public class ArmazemFacade implements IArmazemFacade{
 
     /**
      * Função que procura o robot disponível mais próximo
-     * @return      Robot selecionado
+     * @return      ID do Robot selecionado
      */
-    private Robot getMelhorRobotDisponivel() {  // TODO: esta uma merda
-        final Robot[] robot = {null};
-        this.robots
-                .values()
-                .stream()
-                .filter(Robot::isDisponivel)
-                .sorted(new ComparatorDistanciaRobots())
-                .findFirst()
-                .ifPresent(r -> robot[0] = r);
+    private int getMelhorRobotDisponivel(Localizacao origem) throws InvalidTransportOrderException {
+        List<Robot> robots_disponiveis = this.robots.values().stream().filter(Robot::isDisponivel).collect(Collectors.toList());
 
-        return robot[0];
+        if (robots_disponiveis.isEmpty()) throw new InvalidTransportOrderException(TransportOrderError.ROBOTS_INDISPONIVEIS);
+
+        return grafo_armazem.getMelhorRobot(robots_disponiveis, origem);
     }
 }
