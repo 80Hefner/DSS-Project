@@ -34,7 +34,6 @@ public class PaleteDAO implements IPaleteDAO {
     /**
      * Implementação do padrão Singleton
      * @return devolve a instância única desta classe
-     * @throws NullPointerException Em caso de erro
      */
     public static PaleteDAO getInstance() {
         if (PaleteDAO.singleton == null) {

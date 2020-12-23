@@ -12,14 +12,14 @@ import java.util.Map;
 public interface IRobotDAO extends Map<Integer, Robot> {
 
     /**
-     * Funçaõ que altera parametros necessarios de um Robot quando este realiza uma Entrega
+     * Função que altera parametros necessarios de um Robot quando este realiza uma Entrega
      * @param id_robot      id_Robot que realiza a Entrega
      * @throws NullPointerException     Em caso de erro
      */
     void entregaRealizada(Integer id_robot);
 
     /**
-     * Funçaõ que altera parametros necessarios de um Robot quando este aceita realizar uma Entrega
+     * Função que altera parametros necessarios de um Robot quando este aceita realizar uma Entrega
      * @param id_robot          id_Robot que realiza a Entrega
      * @param entrega           Entrega a ser realizada
      * @throws NullPointerException     Em caso de erro
@@ -27,7 +27,7 @@ public interface IRobotDAO extends Map<Integer, Robot> {
     void recolhePalete (Integer id_robot, Entrega entrega);
 
     /**
-     * Funçaõ que altera parametros necessarios de um Robot quando este recolhe uma Entrega
+     * Função que altera parametros necessarios de um Robot quando este recolhe uma Entrega
      * @param id_robot              id_Robot respetivo à Entrega
      * @param localizacaoNova       novaLocalizacaoAtual do Robot
      * @throws NullPointerException     Em caso de erro
