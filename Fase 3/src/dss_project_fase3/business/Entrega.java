@@ -1,7 +1,6 @@
 package dss_project_fase3.business;
 
 import dss_project_fase3.business.Localizacao.Localizacao;
-import dss_project_fase3.business.Palete.Palete;
 
 public class Entrega {
     private String qr_code;

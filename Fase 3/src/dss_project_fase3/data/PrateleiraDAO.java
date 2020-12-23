@@ -1,25 +1,27 @@
 package dss_project_fase3.data;
 
 
+import dss_project_fase3.business.Localizacao.Localizacao_Armazenamento;
+import dss_project_fase3.business.Palete.Material;
+import dss_project_fase3.business.Palete.Palete;
+import dss_project_fase3.business.Palete.QR_Code;
 import dss_project_fase3.business.Prateleira;
 
 import java.sql.*;
 import java.util.*;
 
-// Esta classe precisa ser discuritda, porque não fará sentido em algumas circuntâncias. Fará mais sentido se se utilizar um map e a prateleira tiver um bool de disponibilidade.
-public class PrateleiraDAO  implements Map<Integer, Prateleira> {
+public class PrateleiraDAO implements IPrateleiraDAO {
     private static PrateleiraDAO singleton = null;
 
     public PrateleiraDAO() {
         try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
              Statement stm = conn.createStatement()) {
-            String sql = "CREATE TABLE IF NOT EXISTS paletes (" +
-                    "QR_CODE varchar(100) NOT NULL PRIMARY KEY," +
-                    "NOME varchar(45) DEFAULT NULL," +
-                    "LOCALIZACAO varchar (20) DEFAULT NULL," +
-                    "CORREDOR int DEFAULT NULL," +
-                    "SETOR int DEFAULT NULL," +
-                    "ID_ROBOT int DEFAULT NULL)";  // Assume-se uma relação 1-n entre Turma e Aluno
+            String sql = "CREATE TABLE IF NOT EXISTS prateleiras (" +
+                    "CORREDOR int NOT NULL," +
+                    "SETOR int NOT NULL," +
+                    "PALETE varchar (100) DEFAULT NULL," +
+                    "PRIMARY KEY (CORREDOR, SETOR)," +
+                    "FOREIGN KEY (PALETE) REFERENCES paletes(QR_CODE))";
             stm.executeUpdate(sql);
         } catch (SQLException e) {
             // Erro a criar tabela...
@@ -29,11 +31,6 @@ public class PrateleiraDAO  implements Map<Integer, Prateleira> {
     }
 
 
-    /**
-     * Implementação do padrão Singleton
-     *
-     * @return devolve a instância única desta classe
-     */
     public static PrateleiraDAO getInstance() {
         if (PrateleiraDAO.singleton == null) {
             PrateleiraDAO.singleton = new PrateleiraDAO();
@@ -42,15 +39,12 @@ public class PrateleiraDAO  implements Map<Integer, Prateleira> {
     }
 
 
-    /**
-     * @return número de alunos na base de dados
-     */
     @Override
     public int size() {
         int i = 0;
         try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
              Statement stm = conn.createStatement();
-             ResultSet rs = stm.executeQuery("SELECT count(*) FROM paletes")) {
+             ResultSet rs = stm.executeQuery("SELECT count(*) FROM prateleiras")) {
             if(rs.next()) {
                 i = rs.getInt(1);
             }
@@ -63,31 +57,22 @@ public class PrateleiraDAO  implements Map<Integer, Prateleira> {
         return i;
     }
 
-    /**
-     * Método que verifica se existem alunos
-     *
-     * @return true se existirem 0 alunos
-     */
+
     @Override
     public boolean isEmpty() {
         return this.size() == 0;
     }
 
 
-    /**
-     * Método que cerifica se um id de turma existe na base de dados
-     *
-     * @param key id da turma
-     * @return true se a turma existe
-     * @throws NullPointerException Em caso de erro - deveriam ser criadas exepções do projecto
-     */
     @Override
-    public boolean containsKey(Object key) {
+    public boolean contains(Object o) {
         boolean r;
+        Prateleira prat = (Prateleira) o;
         try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
              Statement stm = conn.createStatement();
              ResultSet rs =
-                     stm.executeQuery("SELECT QR_CODE FROM paletes WHERE QR_CODE='"+key.toString()+"'")) {
+                     stm.executeQuery("SELECT * FROM prateleiras WHERE CORREDOR="+prat.getLocalizacao().getCorredor()+" AND SETOR="+prat.getLocalizacao().getSetor()
+                             + " AND PALETE='"+prat.getQr_code()+"'" )) {
             r = rs.next();
         } catch (SQLException e) {
             // Database error!
@@ -97,65 +82,48 @@ public class PrateleiraDAO  implements Map<Integer, Prateleira> {
         return r;
     }
 
-
-    /**
-     * Verifica se uma Prateleira existe na base de dados
-     *
-     * Esta implementação é provisória. Devia testar o objecto completo e não apenas a chave.
-     *
-     * @param value ...
-     * @return ...
-     * @throws NullPointerException Em caso de erro - deveriam ser criadas exepções do projecto
-     */
     @Override
-    public boolean containsValue(Object value) {
-        Prateleira a = (Prateleira) value;
-        return this.containsKey(a.getLocalizacao().getCorredor()); //ISTO TÁ MAL
-    }
-
-
-    /**
-     * Obter um aluno, dado o seu número
-     *
-     * @param key número do aluno
-     * @return o aluno caso exista (null noutro caso)
-     * @throws NullPointerException Em caso de erro - deveriam ser criadas exepções do projecto
-     */
-    @Override
-    public Prateleira get(Object key) {
-        Prateleira a = null;
+    public Iterator<Prateleira> iterator() {
+        Collection<Prateleira> col = new TreeSet<>();
         try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
              Statement stm = conn.createStatement();
-             ResultSet rs = stm.executeQuery("SELECT * FROM paletes WHERE QR_CODE='"+key.toString()+"'")) {
-            if (rs.next()) {  // A chave existe na tabela
-                // Reconstruir o aluno com os dados obtidos da BD - a chave estranjeira da turma, não é utilizada aqui.
-                //a = new Prateleira(rs.getString("RQ_CODE"), rs.getString("NOME"), rs.getString("LOCALIZACAO"), rs.getInt("CORREDOR"), rs.getInt("SETOR"), rs.getInt("ID_ROBOT"));
+             ResultSet rs =
+                     stm.executeQuery("SELECT * FROM prateleiras" )) {
+            while (rs.next()) {
+                int corredor = rs.getInt("CORREDOR");
+                int setor = rs.getInt("SETOR");
+                String qr_code = rs.getString("PALETE");
+
+                Prateleira prateleira = new Prateleira(new Localizacao_Armazenamento(corredor, setor), qr_code);
+                col.add(prateleira);
             }
         } catch (SQLException e) {
             // Database error!
             e.printStackTrace();
             throw new NullPointerException(e.getMessage());
         }
-        return a;
+        return col.iterator();
     }
 
-
-    /**
-     * Insere uma turma na base de dados
-     *
-     * ATENÇÂO: Falta devolver o valor existente (caso exista um)
-     *
-     * @param key o id da turma
-     * @param value a turma
-     * @return para já retorna sempre null (deverá devolver o valor existente, caso exista um)
-     * @throws NullPointerException Em caso de erro - deveriam ser criadas exepções do projecto
-     */
     @Override
-    public Prateleira put(Integer key, Prateleira value) {
-        Prateleira res = null;
+    public Object[] toArray() {
+        return new Object[0];
+    }
+
+    @Override
+    public <T> T[] toArray(T[] a) {
+        return null;
+    }
+
+    @Override
+    public boolean add(Prateleira prateleira) {  // TODO: return value sempre a true
+        boolean res = true;
         try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
              Statement stm = conn.createStatement()) {
 
+            stm.executeUpdate(
+                        "INSERT INTO prateleiras VALUES ("+prateleira.getLocalizacao().getCorredor()+", "+prateleira.getLocalizacao().getSetor()+", '"+prateleira.getQr_code()+"') " +
+                                "ON DUPLICATE KEY UPDATE CORREDOR=VALUES(CORREDOR), SETOR=VALUES(SETOR), PALETE=VALUES(PALETE)");
         } catch (SQLException e) {
             // Database error!
             e.printStackTrace();
@@ -164,56 +132,47 @@ public class PrateleiraDAO  implements Map<Integer, Prateleira> {
         return res;
     }
 
-
-    /**
-     * Remover uma turma, dado o seu id
-     *
-     * NOTA: Não estamos a apagar a sala...
-     *
-     * @param key id da turma a remover
-     * @return a turma removida
-     * @throws NullPointerException Em caso de erro - deveriam ser criadas exepções do projecto
-     */
     @Override
-    public Prateleira remove(Object key) {
-        Prateleira t = this.get(key);
+    public boolean remove(Object o) {  // TODO: return value sempre a true
+        boolean r = true;
+        Prateleira prat = (Prateleira) o;
         try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
              Statement stm = conn.createStatement()) {
-            stm.executeUpdate("DELETE FROM paletes WHERE QR_CODE='"+key.toString()+"'");
+            stm.executeUpdate("DELETE FROM paletes WHERE CORREDOR="+prat.getLocalizacao().getCorredor()+" AND SETOR="+prat.getLocalizacao().getSetor()
+                    + " AND PALETE='"+prat.getQr_code()+"'" );
         } catch (Exception e) {
             // Database error!
             e.printStackTrace();
             throw new NullPointerException(e.getMessage());
         }
-        return t;
+        return r;
     }
 
-
-    /**
-     * Adicionar um conjunto de alunos à base de dados
-     *
-     * @param paletesNovas as alunos a adicionar
-     * @throws NullPointerException Em caso de erro - deveriam ser criadas exepções do projecto
-     */
     @Override
-    public void putAll(Map<? extends Integer, ? extends Prateleira> paletesNovas) {
-        for (Prateleira a : paletesNovas.values()) {
-            this.put(a.getLocalizacao().getCorredor(), a);  //ISTO TÁ MAL
-        }
+    public boolean containsAll(Collection<?> c) {
+        return false;
     }
 
+    @Override
+    public boolean addAll(Collection<? extends Prateleira> c) {
+        return false;
+    }
 
-    /**
-     * Apagar todos os alunos
-     *
-     * @throws NullPointerException ...
-     * @throws NullPointerException Em caso de erro - deveriam ser criadas exepções do projecto
-     */
+    @Override
+    public boolean retainAll(Collection<?> c) {
+        return false;
+    }
+
+    @Override
+    public boolean removeAll(Collection<?> c) {
+        return false;
+    }
+
     @Override
     public void clear() {
         try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
              Statement stm = conn.createStatement()) {
-            stm.executeUpdate("TRUNCATE paletes");
+            stm.executeUpdate("TRUNCATE prateleiras");
         } catch (SQLException e) {
             // Database error!
             e.printStackTrace();
@@ -221,72 +180,31 @@ public class PrateleiraDAO  implements Map<Integer, Prateleira> {
         }
     }
 
-
-    /**
-     * @return Todos os QR_Code das paletes da base de dados
-     */
-    @Override
-    public Set<Integer> keySet() {
-        Set<Integer> set = new HashSet<>();
+    public void inserePalete(Localizacao_Armazenamento localizacao, String qr_code) {
         try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
-             Statement stm = conn.createStatement();
-             ResultSet rs = stm.executeQuery("SELECT QR_CODE FROM paletes")) {
-            while (rs.next()) {   // Utilizamos o get para construir as paletes
-                //String stringQR = rs.getString("QR_CODE");
-                //set.add(new QR_Code(stringQR));
-            }
-        } catch (Exception e) {
+             Statement stm = conn.createStatement()) {
+
+            stm.executeUpdate(
+                    "UPDATE prateleiras SET PALETE=('"+qr_code+"') WHERE CORREDOR="+localizacao.getCorredor()+" AND SETOR="+localizacao.getSetor()
+            );
+        } catch (SQLException e) {
             // Database error!
             e.printStackTrace();
             throw new NullPointerException(e.getMessage());
         }
-        return set;
     }
 
-    /**
-     * @return Todos as paletes da base de dados
-     */
-    @Override
-    public Collection<Prateleira> values() {
-        Collection<Prateleira> col = new HashSet<>();
+    public void removePalete(Localizacao_Armazenamento localizacao) {
         try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
-             Statement stm = conn.createStatement();
-             ResultSet rs = stm.executeQuery("SELECT QR_CODE FROM paletes")) {
-            while (rs.next()) {   // Utilizamos o get para construir as paletes
-                String stringQR = rs.getString("QR_CODE");
-                //col.add(this.get( new QR_Code(stringQR) ));
-            }
-        } catch (Exception e) {
+             Statement stm = conn.createStatement()) {
+
+            stm.executeUpdate(
+                    "UPDATE prateleiras SET PALETE=NULL WHERE CORREDOR="+localizacao.getCorredor()+" AND SETOR="+localizacao.getSetor()
+            );
+        } catch (SQLException e) {
             // Database error!
             e.printStackTrace();
             throw new NullPointerException(e.getMessage());
         }
-        return col;
-    }
-
-
-    /**
-     * NÃO IMPLEMENTADO!
-     * @return Set com Entre Sets da base de dados
-     */
-    @Override
-    public Set<Map.Entry<Integer, Prateleira>> entrySet() {
-        Set<Map.Entry<Integer, Prateleira>> set = new HashSet<>();
-        try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
-             Statement stm = conn.createStatement();
-             ResultSet rs = stm.executeQuery("SELECT QR_CODE FROM paletes")) {
-            while (rs.next()) {   // Utilizamos o get para construir as paletes
-                //String stringQR = rs.getString("QR_CODE");
-                //QR_Code novoQR = new QR_Code(stringQR);
-                //Prateleira novaPrateleira = this.get(novoQR);
-                //Map.Entry<QR_Code,Prateleira> entrada = new AbstractMap.SimpleEntry<>(novoQR,novaPrateleira);
-                //set.add(entrada);
-            }
-        } catch (Exception e) {
-            // Database error!
-            e.printStackTrace();
-            throw new NullPointerException(e.getMessage());
-        }
-        return set;
     }
 }

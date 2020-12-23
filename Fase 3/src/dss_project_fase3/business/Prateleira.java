@@ -5,29 +5,34 @@ import dss_project_fase3.business.Palete.Palete;
 
 public class Prateleira implements Comparable<Prateleira>{
     private final Localizacao_Armazenamento localizacao;
-    private Palete palete;
+    private String qr_code;
 
     public Prateleira(Localizacao_Armazenamento localizacao) {
         this.localizacao = localizacao.clone();
-        this.palete = null;
+        this.qr_code = null;
+    }
+
+    public Prateleira(Localizacao_Armazenamento localizacao, String qr_code) {
+        this.localizacao = localizacao.clone();
+        this.qr_code = qr_code;
     }
 
     public Localizacao_Armazenamento getLocalizacao() {
         return localizacao;
     }
 
-    public Palete getPalete() {
-        return palete.clone();
+    public String getQr_code() {
+        return qr_code;
     }
 
     public void inserePalete(Palete p) {
-        this.palete = p.clone();
+        this.qr_code = p.getQr_code().getCodigo();
     }
 
-    public Palete retiraPalete() {
-        Palete p = this.palete.clone();
-        this.palete = null;
-        return p;
+    public String retiraPalete() {
+        String str = this.qr_code;
+        this.qr_code = null;
+        return str;
     }
 
     public boolean equals(Object o) {

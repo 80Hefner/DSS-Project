@@ -6,21 +6,23 @@ import dss_project_fase3.business.Localizacao.Localizacao_Robot;
 import dss_project_fase3.business.Localizacao.Localizacao_Transporte;
 import dss_project_fase3.business.Palete.*;
 import dss_project_fase3.data.IPaleteDAO;
+import dss_project_fase3.data.IPrateleiraDAO;
 import dss_project_fase3.data.PaleteDAO;
+import dss_project_fase3.data.PrateleiraDAO;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class ArmazemFacade implements IArmazemFacade{
-    private List<Prateleira> prateleirasUsadas;
-    private List<Prateleira> prateleirasLivres;
+    private IPrateleiraDAO prateleiras;
+    private Set<Prateleira> prateleirasLivres;
     private IPaleteDAO paletes;
-    private List<Palete> paletes_para_transporte;
+    private List<String> paletes_para_transporte;
     private Map<Integer, Robot> robots;
 
     public ArmazemFacade(int nrCorredores, int nrSetores) {
-        this.prateleirasUsadas = new ArrayList<>();
-        this.prateleirasLivres = new ArrayList<>();
+        this.prateleiras = PrateleiraDAO.getInstance();
+        this.prateleirasLivres = new TreeSet<>();
         this.paletes = PaleteDAO.getInstance();
         this.paletes_para_transporte = new ArrayList<>();
         this.robots = new HashMap<>();
@@ -36,7 +38,12 @@ public class ArmazemFacade implements IArmazemFacade{
                 .values()
                 .stream()
                 .filter(p -> p.getLocalizacao().getZona().equals(ZonaArmazem.ZONA_RECECAO))
-                .forEach(p -> this.paletes_para_transporte.add(p));
+                .forEach(p -> this.paletes_para_transporte.add(p.getQr_code().getCodigo()));
+
+        this.prateleiras
+                .stream()
+                .filter(p -> p.getQr_code() == null)
+                .forEach(p -> this.prateleirasLivres.add(p));
 
         this.robots.put(1, new Robot(1));
         this.robots.put(2, new Robot(2));
@@ -48,18 +55,18 @@ public class ArmazemFacade implements IArmazemFacade{
         Palete p = new Palete (qr_code.clone(), new Material(qr_code.getMaterial()), new Localizacao_Transporte(ZonaArmazem.ZONA_RECECAO));
 
         this.paletes.put(qr_code.getCodigo(), p);
-        this.paletes_para_transporte.add(p);
+        this.paletes_para_transporte.add(p.getQr_code().getCodigo());
     }
 
     @Override
     public void comunicar_ordem_transporte() {
         if (this.paletes_para_transporte.isEmpty()) return;
 
-        Palete pal = this.paletes_para_transporte.remove(0);
+        String qr_code = this.paletes_para_transporte.remove(0);
+        Palete pal = this.paletes.get(qr_code);
 
         Prateleira prat = getPrateleiraDisponivel();
         this.prateleirasLivres.remove(prat);
-        this.prateleirasUsadas.add(prat);
 
         Entrega e = new Entrega(pal.getQr_code().getCodigo(), pal.getLocalizacao(), prat.getLocalizacao());
 
@@ -77,6 +84,7 @@ public class ArmazemFacade implements IArmazemFacade{
     @Override
     public void notificar_entrega_palete(QR_Code qr_code, int id_robot) {
         this.paletes.atualizaLocalizacao(this.robots.get(id_robot).getEntregaAtual().getDestino(), qr_code.getCodigo());
+        this.prateleiras.inserePalete((Localizacao_Armazenamento) this.robots.get(id_robot).getEntregaAtual().getDestino(), qr_code.getCodigo());
 
         this.robots.get(id_robot).pousarEntrega();
 
@@ -92,8 +100,14 @@ public class ArmazemFacade implements IArmazemFacade{
                 .collect(Collectors.toList());
     }
 
-    private Prateleira getPrateleiraDisponivel() {
-        return this.prateleirasLivres.get(0);
+    private Prateleira getPrateleiraDisponivel() {  // TODO: esta uma merda
+        final Prateleira[] prateleira = {null};
+        this.prateleirasLivres
+                .stream()
+                .findAny()
+                .ifPresent(p -> prateleira[0] = p);
+
+        return prateleira[0];
     }
 
     private Robot getMelhorRobotDisponivel() {  // TODO: esta uma merda
